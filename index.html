@@ -347,6 +347,16 @@ td.cur{background:var(--blue-soft)}
 .scr-steps{font-size:clamp(1.1rem,2.2vw,1.6rem);line-height:1.6;color:#d6ebe6;margin-top:14px}
 .scr-url{font-family:var(--mono);font-size:clamp(1rem,2vw,1.4rem);color:#7fd3ff;margin-top:14px;word-break:break-all}
 @media (max-width:800px){.scr-join{grid-template-columns:minmax(0,1fr)}}
+.exit-row{padding-bottom:16px}
+.peer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:28px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 28px;margin-bottom:50px}
+.peer h2{font-size:clamp(1.4rem,3vw,2rem);margin-top:6px}
+.peer p{color:var(--muted);margin:10px 0 16px;max-width:52ch}
+.peer-qr{width:min(300px,70vw);height:auto;border-radius:12px;background:#fff}
+.peer-full{position:fixed;inset:0;z-index:60;background:#fff;display:grid;place-items:center;align-content:center;gap:14px;padding:24px;cursor:pointer;text-align:center}
+.peer-full img{width:min(80vh,90vw);height:auto}
+.peer-full .label{font-size:1rem;color:#10302f}
+.peer-full p{color:#56706f}
+@media (max-width:640px){.peer{grid-template-columns:minmax(0,1fr);justify-items:center;text-align:center}.peer p{margin-inline:auto}}
 /* projector screen */
 body.screen-mode .topbar{display:none}
 body.screen-mode{background:#0f2b2a}
@@ -503,11 +513,11 @@ body.g-screen-mode .wrap{max-width:1500px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="config.js?v=202611201812"></script>
-<script src="db.js?v=202611201812"></script>
-<script src="cases.js?v=202611201812"></script>
-<script src="extra.js?v=202611201812"></script>
-<script src="game2.js?v=202611201812"></script>
+<script src="config.js?v=202611201829"></script>
+<script src="db.js?v=202611201829"></script>
+<script src="cases.js?v=202611201829"></script>
+<script src="extra.js?v=202611201829"></script>
+<script src="game2.js?v=202611201829"></script>
 <script>
 (function(){
 "use strict";
@@ -879,6 +889,9 @@ function renderHome(){view.innerHTML='';const w=h('<div class="wrap"></div>');
  j.children[0].onclick=()=>{location.hash='team'};j.children[1].onclick=()=>{location.hash='admin'};w.append(j);
  const ex=h('<div class="exit-row"><button type="button" class="tile work"><span class="n">✎</span><h2>Exit-ticket</h2><p>Финальная проверка в конце занятия: 8 заданий по всем темам, 4 варианта. Выберите своё имя. Уход со страницы фиксируется.</p><span class="arts">20 баллов · около 15 минут</span></button></div>');
  ex.firstElementChild.onclick=()=>{location.hash='work'};w.append(ex);
+ const peer=h('<section class="peer"><div class="peer-txt"><div class="label">Взаимная оценка · Команда 8</div><h2>Оцените нашу команду</h2><p>Наведите камеру телефона на QR-код и заполните короткую форму: пять критериев по шкале от 1 до 5. Это займёт около минуты.</p><button type="button" class="btn ghost">Показать QR на весь экран</button></div><img class="peer-qr" src="peer-qr.png" alt="QR-код формы оценки команды 8" width="300" height="300"></section>');
+ peer.querySelector('button').onclick=()=>{const o=h('<div class="peer-full" role="dialog" aria-label="QR-код оценки команды"><div class="label">Оцените команду 8</div><img src="peer-qr.png" alt="QR-код формы оценки команды 8"><p>Нажмите в любом месте, чтобы закрыть</p></div>');const close=()=>{o.remove();document.removeEventListener('keydown',k)};const k=e=>{if(e.key==='Escape')close()};o.onclick=close;document.addEventListener('keydown',k);document.body.append(o)};
+ w.append(peer);
  view.append(w)}
 
 /* ============ DECK ============ */

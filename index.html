@@ -513,11 +513,11 @@ body.g-screen-mode .wrap{max-width:1500px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="config.js?v=202611201300"></script>
-<script src="db.js?v=202611201300"></script>
-<script src="cases.js?v=202611201300"></script>
-<script src="extra.js?v=202611201300"></script>
-<script src="game2.js?v=202611201300"></script>
+<script src="config.js?v=202611201330"></script>
+<script src="db.js?v=202611201330"></script>
+<script src="cases.js?v=202611201330"></script>
+<script src="extra.js?v=202611201330"></script>
+<script src="game2.js?v=202611201330"></script>
 <script>
 (function(){
 "use strict";
@@ -576,7 +576,7 @@ const topics=[
      <div class="box" style="background:var(--bad-soft);border-color:transparent"><h4>Запрещено сдавать <span class="ref-s">п. 5 ст. 114</span></h4><ul class="ul">
       <li>регистрацию компании суд признал недействительной</li><li>дополнительную, уменьшающую КПН или НДС по сделкам с закрытой компанией</li></ul></div></div>`))}
  ]},
-{id:'t2',n:'02',title:'Порядок декларирования',short:'Четыре шага подачи, статус «Документ принят», приостановление, исправление после приёма, автоматическая нулевая отчётность, практический кейс.',arts:'ст. 114–117, 136–137 НК РК',
+{id:'t2',n:'02',title:'Порядок декларирования',short:'Четыре шага подачи, статус «Документ принят», приостановление, исправление после приёма, автоматическая нулевая отчётность, камеральный контроль.',arts:'ст. 114–117, 136–137 НК РК',
  slides:[
  s=>{s.append(h('<h3>Как предприятие подаёт декларацию: 4 шага</h3>'),h('<p class="lead">Декларирование — компания сообщает налоговую базу и сумму налога. Нажимайте на шаги.</p>'),
    picks([
@@ -614,14 +614,6 @@ const topics=[
  s=>{s.append(h('<h3>После сдачи: камеральный контроль</h3>'),h('<p class="lead">Налоговая сверяет отчёт с данными контрагентов и банков без выезда (ст. 136–137).</p>'));
    const fl=h('<div class="flow"></div>');['Камеральный контроль','Расхождение','Уведомление','Отчётность по уведомлению или пояснение'].forEach((x,i,a)=>{fl.append(h('<span class="fs on">'+x+'</span>'));if(i<a.length-1)fl.append(h('<span class="arrow">→</span>'))});
    s.append(fl,h('<div class="law"><b class="ref">ПП. 4 П. 2 СТ. 86</b>Не исполнили уведомление — блокируют расходы по счетам.</div>'))},
- s=>{s.append(h('<h3>Практический кейс по декларированию</h3>'),h('<p class="lead">4 минуты: ответ и номер статьи. По 1 баллу за ответ и за норму, максимум 6.</p>'));
-   const cs=[
-    ['1. Проверка приёма','Статус декларации — «Документ не принят». Она представлена?','<b>Нет.</b> Нужен статус «Документ принят» (<b>п. 5 ст. 115</b>).'],
-    ['2. Срок прошёл','Система создала отчёт с нулями, но у ТОО был объект налогообложения. Что подать?','<b>Дополнительную отчётность</b> за тот же период (<b>п. 6–7 ст. 115</b>).'],
-    ['3. Исправление суммы','В принятой отчётности 240 000 ₸, верно — 300 000 ₸. Что указать в строке?','<b>+60 000 ₸</b> = 300 000 − 240 000. Если внести 300 000, итог завысится до 540 000 (<b>п. 1 ст. 116</b>).']];
-   const g=h('<div style="display:grid;gap:12px"></div>');
-   cs.forEach(c=>{const b=h('<div class="check"><div class="q">'+c[0]+'</div><p>'+c[1]+'</p><button type="button" class="btn ghost" style="margin-top:10px">Показать ключ</button><div class="fb" hidden>'+c[2]+'</div></div>');const bt=b.querySelector('button'),fb=b.querySelector('.fb');bt.onclick=()=>{fb.hidden=!fb.hidden;bt.textContent=fb.hidden?'Показать ключ':'Скрыть ключ'};g.append(b)});
-   s.append(g)},
  ]},
 {id:'t3',n:'03',title:'Формы и сроки сдачи и уплаты',short:'Основные формы на 2026 год, сроки сдачи и уплаты, налоговый календарь предприятия.',arts:'ст. 347, 359, 445, 505–506, 562, 727 НК РК',
  slides:[

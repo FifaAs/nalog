@@ -209,30 +209,26 @@ window.K8G = (function () {
     function caseForm(r, mv, T) {
       const cs = BANK().main[pub.caseIdx]; if (!cs) return;
       const dk = 'k8_draft_' + r;
-      const draft = LS.get(dk, null) || { a: mv.answer != null ? mv.answer : null, arg: mv.arg || '', t: mv.target || '' };
+      const draft = LS.get(dk, null) || { a: mv.answer != null ? mv.answer : null, t: mv.target || '' };
       const f = h('<div class="sheet tm-form"></div>');
       f.append(h('<div class="label">' + esc(cs.topic) + ' · кейс на доске</div>'), h('<h3 class="tm-q">' + esc(cs.text) + '</h3>'));
       const opts = h('<div class="pr-opts"></div>');
       cs.opts.forEach((o, j) => { const b = h('<button type="button" class="pr-opt" aria-pressed="' + (draft.a === j) + '"><span class="L">' + L[j] + '</span><span>' + esc(o) + '</span></button>'); b.onclick = () => { draft.a = j; LS.set(dk, draft); opts.querySelectorAll('.pr-opt').forEach((x, k) => x.setAttribute('aria-pressed', String(k === j))); }; opts.append(b); });
       f.append(h('<div class="label">1. Ответ</div>'), opts);
-      const ta = h('<label class="f">2. Аргументация: почему этот ответ, какая норма НК РК<textarea rows="4" maxlength="1500" placeholder="Например: по п. 5 ст. 115 НК отчётность считается представленной только со статусом «Документ принят»…"></textarea></label>');
-      const tx = ta.querySelector('textarea'); tx.value = draft.arg; tx.oninput = () => { draft.arg = tx.value; LS.set(dk, draft); };
-      f.append(ta);
       const R = ROLE[me.role];
       if (R && R.verb) {
         const opt = T.filter(t => t.id !== me.id || me.role === 'consultant');
-        const s = h('<label class="f">3. Тайный ход — ' + R.verb.toLowerCase() + '<select><option value="">— выберите команду —</option>' + opt.map(t => '<option value="' + t.id + '"' + (draft.t === t.id ? ' selected' : '') + (me.role === 'consultant' && t.id === me.prevTarget ? ' disabled' : '') + '>' + esc(t.name) + (t.id === me.id ? ' (мы)' : '') + (me.role === 'consultant' && t.id === me.prevTarget ? ' — защищали прошлый квартал' : '') + '</option>').join('') + '</select></label>');
+        const s = h('<label class="f">2. Тайный ход — ' + R.verb.toLowerCase() + '<select><option value="">— выберите команду —</option>' + opt.map(t => '<option value="' + t.id + '"' + (draft.t === t.id ? ' selected' : '') + (me.role === 'consultant' && t.id === me.prevTarget ? ' disabled' : '') + '>' + esc(t.name) + (t.id === me.id ? ' (мы)' : '') + (me.role === 'consultant' && t.id === me.prevTarget ? ' — защищали прошлый квартал' : '') + '</option>').join('') + '</select></label>');
         s.querySelector('select').onchange = e => { draft.t = e.target.value; LS.set(dk, draft); };
         f.append(s, h('<p class="g-muted" style="font-size:.86rem">' + esc(R.hint) + ' Ход сработает, только если ответ на кейс верный.</p>'));
-      } else if (R) f.append(h('<p class="g-muted" style="font-size:.9rem">3. Тайного хода у вашей роли нет. ' + esc(R.hint) + '</p>'));
+      } else if (R) f.append(h('<p class="g-muted" style="font-size:.9rem">2. Тайного хода у вашей роли нет. ' + esc(R.hint) + '</p>'));
       const st = h('<p class="tm-sent g-muted">' + sentLine(mv) + '</p>');
       const b = h('<button type="button" class="btn blue g-send">' + (mv.answer != null ? 'Изменить ответ' : 'Отправить ответ') + '</button>');
       b.onclick = async () => {
         if (draft.a == null) return fail(new Error('Выберите вариант ответа.'));
-        if ((draft.arg || '').trim().length < 10) return fail(new Error('Напишите аргументацию — хотя бы одно предложение со ссылкой на норму.'));
         if (R && R.verb && !draft.t) return fail(new Error('Выберите команду для тайного хода.'));
         b.disabled = true;
-        try { await DB().teamSubmit(code, r, draft.a, draft.arg.trim(), R && R.verb ? draft.t : ''); key = ''; await load(); }
+        try { await DB().teamSubmit(code, r, draft.a, '', R && R.verb ? draft.t : ''); key = ''; await load(); }
         catch (e) { fail(e); b.disabled = false; }
       };
       f.append(st, b); w.append(f);
@@ -246,13 +242,12 @@ window.K8G = (function () {
       let a = null;
       const opts = h('<div class="pr-opts"></div>');
       ex.opts.forEach((o, j) => { const b = h('<button type="button" class="pr-opt" aria-pressed="false"><span class="L">' + L[j] + '</span><span>' + esc(o) + '</span></button>'); b.onclick = () => { a = j; opts.querySelectorAll('.pr-opt').forEach((x, k) => x.setAttribute('aria-pressed', String(k === j))); }; opts.append(b); });
-      const ta = h('<label class="f">Аргументация<textarea rows="3" maxlength="1500" placeholder="Почему этот ответ, какая норма"></textarea></label>');
       const b = h('<button type="button" class="btn blue g-send">Отправить ответ на доп. кейс</button>');
       b.onclick = () => {
         if (a == null) return fail(new Error('Выберите вариант ответа.'));
-        dialog('<h3>Отправить ответ «' + L[a] + '»?</h3><p>Изменить его будет нельзя.</p>', [{ t: 'Отмена', cls: 'ghost' }, { t: 'Отправить', on: async () => { try { await DB().teamExtra(code, r, a, ta.querySelector('textarea').value.trim()); key = ''; await load(); } catch (e) { fail(e); } } }]);
+        dialog('<h3>Отправить ответ «' + L[a] + '»?</h3><p>Изменить его будет нельзя.</p>', [{ t: 'Отмена', cls: 'ghost' }, { t: 'Отправить', on: async () => { try { await DB().teamExtra(code, r, a, ''); key = ''; await load(); } catch (e) { fail(e); } } }]);
       };
-      f.append(opts, ta, b); w.append(f);
+      f.append(opts, b); w.append(f);
     }
     return () => { stopped = true; stop(); joinStop && joinStop(); };
   }
@@ -419,12 +414,11 @@ window.K8G = (function () {
     }
     function roundTable(T, cur, role, live) {
       const cs = cur.cs;
-      const t = h('<div class="tbl"><table class="sm gm-t"><thead><tr><th>Команда</th><th>Ответ</th><th>Аргументация</th><th>Тайный ход</th><th>Оценка ответа</th></tr></thead><tbody></tbody></table></div>');
+      const t = h('<div class="tbl"><table class="sm gm-t"><thead><tr><th>Команда</th><th>Ответ</th><th>Тайный ход</th><th>Оценка ответа</th></tr></thead><tbody></tbody></table></div>');
       T.forEach(tm => {
         const m = cur.mv(tm.id) || {}, ro = sec.roles[tm.id], ok = cur.ok[tm.id], ov = (cur.rs.ov || {})[tm.id];
         const tr = h('<tr><td><b>' + esc(tm.name) + '</b><br>' + role(tm.id) + '</td>' +
           '<td>' + (m.answer != null ? '<b class="gm-ans ' + (m.answer === cs.c ? 'y' : 'n') + '">' + L[m.answer] + '</b><br><span class="g-muted" style="font-size:.78rem">' + time(m.updated_at) + '</span>' : '<span class="g-muted">' + (live ? 'ждём…' : 'нет ответа') + '</span>') + '</td>' +
-          '<td class="gm-arg">' + (m.arg ? esc(m.arg) : '<span class="g-muted">—</span>') + '</td>' +
           '<td>' + (ROLE[ro] && ROLE[ro].verb ? (m.target ? '<span class="g-muted" style="font-size:.8rem">' + ROLE[ro].verb + '</span><br><b>' + esc(nm(m.target)) + '</b>' + (ok === false ? '<div class="mv-off">ход сгорел — ответ неверный</div>' : '') : '<span class="g-muted">не выбран</span>') : '<span class="g-muted">хода нет</span>') + '</td><td></td></tr>');
         const yn = h('<div class="yn"></div>');
         [[true, '✓'], [false, '✗']].forEach(([v, lab]) => { const b = h('<button type="button" class="ynb ' + (v ? 'y' : 'n') + '" aria-pressed="' + (ok === v) + '" title="' + (v ? 'Засчитать' : 'Не засчитать') + '">' + lab + '</button>'); b.onclick = () => { cur.rs.ov = cur.rs.ov || {}; if (ov === v) delete cur.rs.ov[tm.id]; else cur.rs.ov[tm.id] = v; syncDay(); save(); }; yn.append(b); });
@@ -517,10 +511,10 @@ window.K8G = (function () {
       S.rounds.slice().reverse().forEach(x => {
         const d = h('<details class="gm-hist"' + (x.r === pub.round ? ' open' : '') + '><summary><b>Квартал ' + x.r + '</b> · ' + esc(x.cs ? x.cs.topic : '') + '</summary></details>');
         if (x.cs) d.append(h('<p style="font-size:.92rem">' + esc(x.cs.text) + ' <span class="adm-ans">Верно: ' + L[x.cs.c] + '</span></p>'));
-        const t = h('<div class="tbl"><table class="sm"><thead><tr><th>Команда</th><th>Ответ</th><th>Аргументация</th><th>Ход</th><th class="n-right">Очки</th><th>За что</th></tr></thead><tbody></tbody></table></div>');
+        const t = h('<div class="tbl"><table class="sm"><thead><tr><th>Команда</th><th>Ответ</th><th>Ход</th><th class="n-right">Очки</th><th>За что</th></tr></thead><tbody></tbody></table></div>');
         T.forEach(tm => {
           const m = x.mv(tm.id) || {}, ro = sec.roles[tm.id];
-          t.querySelector('tbody').append(h('<tr><td><b>' + esc(tm.name) + '</b><br>' + role(tm.id) + '</td><td>' + (m.answer != null ? L[m.answer] + (x.ok[tm.id] ? ' ✓' : ' ✗') : '—') + '</td><td class="gm-arg">' + esc(m.arg || '—') + '</td><td style="font-size:.86rem">' + (m.target ? esc(ROLE[ro].verb || '') + ': ' + esc(nm(m.target)) : '—') + '</td><td class="n-right">' + fmt(x.pts[tm.id]) + '</td><td style="font-size:.84rem">' + x.why[tm.id].map(esc).join('<br>') + '</td></tr>'));
+          t.querySelector('tbody').append(h('<tr><td><b>' + esc(tm.name) + '</b><br>' + role(tm.id) + '</td><td>' + (m.answer != null ? L[m.answer] + (x.ok[tm.id] ? ' ✓' : ' ✗') : '—') + '</td><td style="font-size:.86rem">' + (m.target ? esc(ROLE[ro].verb || '') + ': ' + esc(nm(m.target)) : '—') + '</td><td class="n-right">' + fmt(x.pts[tm.id]) + '</td><td style="font-size:.84rem">' + x.why[tm.id].map(esc).join('<br>') + '</td></tr>'));
         });
         d.append(t); c.append(d);
       });

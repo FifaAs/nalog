@@ -63,6 +63,7 @@
         .subscribe();
       return () => { try { sb.removeChannel(ch); } catch (e) { } };
     },
+    teamRegister(name, members) { return this.rpc('team_register', { tname: name, members }); },
     teamView(code) { return this.rpc('team_view', { c: code }); },
     teamSubmit(code, rnd, ans, argument, tgt) { return this.rpc('team_submit', { c: code, rnd, ans, argument, tgt: tgt || '' }); },
     teamExtra(code, rnd, ans, argument) { return this.rpc('team_extra', { c: code, rnd, ans, argument }); },

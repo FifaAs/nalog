@@ -75,3 +75,48 @@ grant execute on function public.team_view(text), public.team_submit(text, int, 
   public.admin_game(text), public.admin_game_set(text, jsonb, jsonb), public.admin_game_reset(text) to anon, authenticated;
 
 do $$ begin alter publication supabase_realtime add table public.game; exception when duplicate_object then null; end $$;
+
+-- Саморегистрация команды с телефона: название + участники из списка. Роль берётся из заранее перемешанного набора (pool),
+-- код генерируется здесь же. Регистрация открыта, пока игра в фазе «setup».
+create or replace function public.team_register(tname text, members jsonb) returns jsonb language plpgsql security definer set search_path = public as $$
+declare g jsonb; s jsonb; nm text := left(trim(coalesce(tname, '')), 40); taken text[]; m text; pool jsonb; ro text; tid text; code text;
+  abc text := 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; i int; mem jsonb := '[]'::jsonb; n int;
+begin
+  select data into g from game where id = 1 for update;
+  select data into s from admin_state where id = 1 for update;
+  g := coalesce(g, '{}'::jsonb);
+  if coalesce(g->>'phase', 'setup') <> 'setup' then raise exception 'Игра уже началась — регистрация закрыта. Войдите по коду команды.'; end if;
+  if length(nm) < 2 then raise exception 'Введите название команды'; end if;
+  if exists (select 1 from jsonb_array_elements(coalesce(g->'teams', '[]'::jsonb)) t where lower(t->>'name') = lower(nm)) then raise exception 'Такое название уже занято'; end if;
+  if jsonb_typeof(members) is distinct from 'array' or jsonb_array_length(members) = 0 then raise exception 'Отметьте участников команды'; end if;
+  select coalesce(array_agg(x), '{}') into taken from jsonb_array_elements(coalesce(g->'teams', '[]'::jsonb)) t, jsonb_array_elements_text(t->'members') x;
+  for m in select left(trim(x), 80) from jsonb_array_elements_text(members) x loop
+    if m = any(taken) then raise exception 'Уже в другой команде: %', m; end if;
+    if not mem ? m then mem := mem || to_jsonb(m); end if;
+  end loop;
+  if jsonb_array_length(mem) > 12 then raise exception 'Слишком много участников'; end if;
+  if s is null or s->'codes' is null then s := jsonb_build_object('roles', '{}'::jsonb, 'codes', '{}'::jsonb, 'pool', '[]'::jsonb, 'planned', 7, 'rounds', '[]'::jsonb, 'notes', '{}'::jsonb); end if;
+  pool := coalesce(s->'pool', '[]'::jsonb);
+  if jsonb_array_length(pool) = 0 then
+    if jsonb_array_length(coalesce(g->'teams', '[]'::jsonb)) = 0 then
+      n := coalesce((s->>'planned')::int, 7);
+      select jsonb_agg(r order by random()) into pool from unnest(array['mafia', 'consultant'] || case when n >= 4 then array['mimic'] else '{}'::text[] end
+        || array_fill('auditor'::text, array[greatest(n - case when n >= 4 then 3 else 2 end, 0)])) r;
+    else pool := '["auditor"]'::jsonb; end if;
+  end if;
+  ro := pool->>0; pool := pool - 0;
+  tid := substr(md5(random()::text || clock_timestamp()::text), 1, 6);
+  loop
+    code := ''; for i in 1..4 loop code := code || substr(abc, 1 + floor(random() * length(abc))::int, 1); end loop;
+    exit when not exists (select 1 from jsonb_each_text(coalesce(s->'codes', '{}'::jsonb)) where value = code);
+  end loop;
+  s := jsonb_set(s, '{roles}', coalesce(s->'roles', '{}'::jsonb) || jsonb_build_object(tid, ro));
+  s := jsonb_set(s, '{codes}', coalesce(s->'codes', '{}'::jsonb) || jsonb_build_object(tid, code));
+  s := jsonb_set(s, '{pool}', pool);
+  if g->>'phase' is null then g := g || '{"phase":"setup","round":0,"maxRounds":5}'::jsonb; end if;
+  g := jsonb_set(g, '{teams}', coalesce(g->'teams', '[]'::jsonb) || jsonb_build_array(jsonb_build_object('id', tid, 'name', nm, 'members', mem)));
+  update game set data = g, updated_at = now() where id = 1;
+  update admin_state set data = s, updated_at = now() where id = 1;
+  return jsonb_build_object('code', code, 'id', tid);
+end $$;
+grant execute on function public.team_register(text, jsonb) to anon, authenticated;

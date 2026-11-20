@@ -513,11 +513,11 @@ body.g-screen-mode .wrap{max-width:1500px}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="config.js?v=202611201839"></script>
-<script src="db.js?v=202611201839"></script>
-<script src="cases.js?v=202611201839"></script>
-<script src="extra.js?v=202611201839"></script>
-<script src="game2.js?v=202611201839"></script>
+<script src="config.js?v=202611201200"></script>
+<script src="db.js?v=202611201200"></script>
+<script src="cases.js?v=202611201200"></script>
+<script src="extra.js?v=202611201200"></script>
+<script src="game2.js?v=202611201200"></script>
 <script>
 (function(){
 "use strict";
@@ -885,7 +885,7 @@ function renderHome(){view.innerHTML='';const w=h('<div class="wrap"></div>');
  topics.forEach(t=>{const b=h('<button type="button" class="tile"><span class="n">'+t.n+'</span><h2>'+t.title+'</h2><p>'+t.short+'</p><span class="arts">'+t.arts+' · '+t.slides.length+' '+(n=>n%10===1&&n%100!==11?'слайд':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'слайда':'слайдов')(t.slides.length)+'</span></button>');b.onclick=()=>{location.hash=t.id};g.appendChild(b)});
  const pr=h('<button type="button" class="tile practice"><span class="n">06</span><h2>Работа на закрепление</h2><p>10 вопросов по всем пяти темам. После каждого ответа — объяснение, почему он верный или неверный.</p><span class="arts">10 баллов · около 10 минут</span></button>');pr.onclick=()=>{location.hash='practice'};g.appendChild(pr);
  w.append(g);
- const j=h('<div class="sub-tiles"><button type="button" class="tile small game"><span class="n" style="font-size:1.6rem">Игра</span><h2>Налоговая мафия · вход команды</h2><p>Кейс квартала — на доске, ответ с аргументацией и тайный ход — с телефона команды. Нужен код от ведущего.</p><span class="arts">командная игра · 5 кварталов</span></button><button type="button" class="tile small" style="min-height:auto"><h2 style="font-size:1rem">Панель ведущих</h2><p>Ход игры, экран для доски, результаты закрепления и Exit-ticket. Нужен PIN.</p></button></div>');
+ const j=h('<div class="sub-tiles"><button type="button" class="tile small game"><span class="n" style="font-size:1.6rem">Игра</span><h2>Налоговая мафия · вход команды</h2><p>Кейс квартала — на доске, ответ и тайный ход — с телефона команды.</p><span class="arts">командная игра · 5 кварталов</span></button><button type="button" class="tile small" style="min-height:auto"><h2 style="font-size:1rem">Панель ведущих</h2><p>Ход игры, экран для доски, результаты закрепления и Exit-ticket. Нужен PIN.</p></button></div>');
  j.children[0].onclick=()=>{location.hash='team'};j.children[1].onclick=()=>{location.hash='admin'};w.append(j);
  const ex=h('<div class="exit-row"><button type="button" class="tile work"><span class="n">✎</span><h2>Exit-ticket</h2><p>Финальная проверка в конце занятия: 8 заданий по всем темам, 4 варианта. Выберите своё имя. Уход со страницы фиксируется.</p><span class="arts">20 баллов · около 15 минут</span></button></div>');
  ex.firstElementChild.onclick=()=>{location.hash='work'};w.append(ex);

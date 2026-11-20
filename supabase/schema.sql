@@ -55,6 +55,12 @@ alter table public.screen      enable row level security;
 alter table public.admin_state enable row level security;
 alter table public.app_secret  enable row level security;
 
+-- права на таблицы (нужны, если в проекте выключено автоматическое открытие таблиц для API)
+grant usage on schema public to anon, authenticated;
+grant insert on public.results, public.practice to anon, authenticated;
+grant select on public.screen to anon, authenticated;
+revoke all on public.admin_state, public.app_secret from anon, authenticated;
+
 -- студенты могут только добавить свой результат (один раз на имя — primary key)
 drop policy if exists "insert exit-ticket" on public.results;
 create policy "insert exit-ticket" on public.results for insert to anon, authenticated

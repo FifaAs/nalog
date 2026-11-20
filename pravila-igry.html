@@ -1,0 +1,210 @@
+<title>Правила Налоговой мафии</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one readable column like a printed rules sheet — summary, roles, round flowchart, scheme decision tree, points, hosts, prep list. Palette follows the team's lesson site (mint paper, green + blue). */
+:root{
+  --bg:#f3f8f6;--card:#ffffff;--ink:#10302f;--muted:#56706f;--line:#d3e4df;
+  --green:#14875a;--green-ink:#0f6b47;--green-soft:#e1f4ea;
+  --blue:#1e6bb0;--blue-ink:#164f84;--blue-soft:#e2eef9;
+  --bad:#c0392b;--bad-soft:#fdecea;--warn:#a86400;--warn-soft:#fff3dd;
+  --r-mafia:#2a2f37;--r-mafia-soft:#e8eaed;--r-cons:#14875a;--r-mimic:#7d45b3;--r-mimic-soft:#f1e9f9;--r-aud:#a86400;
+  --display:"Manrope","Segoe UI",system-ui,sans-serif;--body:"Golos Text","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1a19;--card:#152422;--ink:#e3efec;--muted:#93aca8;--line:#2a3d3a;
+  --green:#3fbf86;--green-ink:#7fdcb0;--green-soft:#173a2c;--blue:#5fa3e6;--blue-ink:#9cc7f2;--blue-soft:#172b40;
+  --bad:#ef7a6d;--bad-soft:#3a1d1a;--warn:#e6a64a;--warn-soft:#3a2b14;
+  --r-mafia:#c9d1da;--r-mafia-soft:#252d33;--r-cons:#3fbf86;--r-mimic:#b993e3;--r-mimic-soft:#2e2340;--r-aud:#e6a64a;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1a19;--card:#152422;--ink:#e3efec;--muted:#93aca8;--line:#2a3d3a;
+  --green:#3fbf86;--green-ink:#7fdcb0;--green-soft:#173a2c;--blue:#5fa3e6;--blue-ink:#9cc7f2;--blue-soft:#172b40;
+  --bad:#ef7a6d;--bad-soft:#3a1d1a;--warn:#e6a64a;--warn-soft:#3a2b14;
+  --r-mafia:#c9d1da;--r-mafia-soft:#252d33;--r-cons:#3fbf86;--r-mimic:#b993e3;--r-mimic-soft:#2e2340;--r-aud:#e6a64a;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+.page{max-width:900px;margin:0 auto;padding-block:36px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:34px}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.15;text-wrap:balance}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+header{display:grid;gap:10px}
+header h1{font-size:clamp(1.9rem,5vw,2.8rem);font-weight:800;letter-spacing:-.02em}
+header h1 em{font-style:normal;color:var(--green)}
+.lead{font-size:1.08rem;color:var(--muted);max-width:64ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.chip{font-family:var(--mono);font-size:.8rem;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:4px 12px;font-variant-numeric:tabular-nums}
+section{display:grid;gap:14px}
+section>h2{font-size:1.45rem}
+.core{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--green);border-radius:0 14px 14px 0;padding:16px 20px;display:grid;gap:6px}
+.core b{color:var(--green-ink)}
+/* roles */
+.roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.role{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start}
+.role svg{width:44px;height:52px}
+.role h3{font-size:1.12rem}
+.role .n{font-family:var(--mono);font-size:.74rem;color:var(--muted)}
+.role p{font-size:.95rem;margin-top:4px}
+.role ul{margin:6px 0 0;padding-left:18px;font-size:.93rem;display:grid;gap:2px;color:var(--muted)}
+.mafia h3{color:var(--r-mafia)}.cons h3{color:var(--r-cons)}.mimic h3{color:var(--r-mimic)}.aud h3{color:var(--r-aud)}
+.mafia svg *{fill:var(--r-mafia)}.cons svg *{fill:var(--r-cons)}.mimic svg *{fill:var(--r-mimic)}.aud svg *{fill:var(--r-aud)}
+.split{font-size:.92rem;color:var(--muted)}
+.split b{color:var(--ink);font-variant-numeric:tabular-nums}
+/* round flow */
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;align-items:stretch}
+.step{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:4px;align-content:start;margin-right:18px}
+.step:last-child{margin-right:0}
+.step::after{content:"";position:absolute;right:-15px;top:50%;width:12px;height:12px;border-top:2px solid var(--muted);border-right:2px solid var(--muted);transform:translateY(-50%) rotate(45deg)}
+.step:last-child::after{display:none}
+.step .t{font-family:var(--mono);font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.step h3{font-size:1rem}
+.step p{font-size:.88rem;color:var(--muted)}
+.step.night{background:var(--r-mafia-soft)}
+.gate{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.95rem}
+.gate span{border-radius:10px;padding:8px 12px}
+.gate .ok{background:var(--green-soft);color:var(--green-ink);font-weight:600}
+.gate .no{background:var(--bad-soft);color:var(--bad);font-weight:600}
+/* decision tree */
+.tree{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;display:grid;gap:0;overflow-x:auto}
+.node{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.q{border:2px solid var(--ink);border-radius:12px;padding:10px 14px;font-weight:600;background:var(--bg)}
+.q small{display:block;font-weight:400;color:var(--muted);font-size:.85rem}
+.side{display:flex;align-items:center;gap:8px;font-size:.92rem;min-width:0}
+.side .yes{font-family:var(--mono);font-size:.75rem;font-weight:500;color:var(--muted)}
+.out{border-radius:10px;padding:8px 12px;font-weight:600;max-width:300px}
+.out.g{background:var(--green-soft);color:var(--green-ink)}
+.out.b{background:var(--bad-soft);color:var(--bad)}
+.out.m{background:var(--r-mimic-soft);color:var(--r-mimic)}
+.out.n{background:var(--blue-soft);color:var(--blue-ink)}
+.down{height:26px;margin-left:28px;border-left:2px solid var(--ink);position:relative}
+.down::before{content:attr(data-l);position:absolute;left:10px;top:3px;font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+.down::after{content:"";position:absolute;left:-6px;bottom:-1px;border:5px solid transparent;border-top:7px solid var(--ink);border-bottom:0}
+.final{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:4px}
+.final .out{max-width:none}
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+table{border-collapse:collapse;width:100%}
+th,td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:.95rem}
+th{font-family:var(--display);color:var(--blue);font-size:.9rem}
+tr:last-child td{border-bottom:0}
+td.pts{font-family:var(--mono);white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.p{color:var(--green-ink)}.m{color:var(--bad)}
+/* hosts */
+.hosts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.host{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:4px;align-content:start}
+.host .num{width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:.85rem}
+.host h3{font-size:.98rem}
+.host p{font-size:.87rem;color:var(--muted)}
+.prep{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.prep div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:baseline}
+.prep b{font-family:var(--display);font-size:1.4rem;color:var(--blue-ink);font-variant-numeric:tabular-nums;min-width:2.2ch}
+.note{font-size:.92rem;color:var(--muted)}
+@media (max-width:760px){
+  .roles,.prep,.final{grid-template-columns:minmax(0,1fr)}
+  .hosts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .flow{grid-template-columns:minmax(0,1fr);gap:16px}
+  .step{margin-right:0}
+  .step::after{right:50%;top:auto;bottom:-14px;transform:translateX(50%) rotate(135deg)}
+  .node{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+
+<main class="page">
+  <header>
+    <div class="eyebrow">Команда 8 · интерактив к защите 21 ноября</div>
+    <h1>Налоговая <em>мафия</em>: правила игры</h1>
+    <p class="lead">Каждая команда решает кейсы сама. Верный ответ приносит очки и даёт право сделать ход своей роли. Голосований нет — всё решают знания и тайные ходы.</p>
+    <div class="chips"><span class="chip">7–8 команд</span><span class="chip">4 роли</span><span class="chip">5 кварталов = 5 тем</span><span class="chip">≈ 30 минут</span></div>
+  </header>
+
+  <section>
+    <h2>Главное правило</h2>
+    <div class="core">
+      <p>Каждый квартал все команды решают <b>один кейс</b>, каждая отдельно.</p>
+      <p><b>Верно</b> — команда получает +10 и её ход срабатывает. <b>Неверно</b> — очков нет, хода в этом квартале тоже нет.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Роли</h2>
+    <div class="roles">
+      <div class="role mafia"><svg viewBox="-30 -40 60 70" aria-hidden="true"><circle cx="0" cy="-22" r="13"/><path d="M-21 24 Q-21 -4 0 -4 Q21 -4 21 24 Z"/></svg>
+        <div><div class="n">1 команда</div><h3>Схемщики</h3><p>Выбирают жертву. Днём жертва решает <b>дополнительный кейс</b>.</p>
+        <ul><li>жертва решила — ей +5, схема раскрыта</li><li>не решила — жертве −10, Схемщикам +10</li></ul></div></div>
+      <div class="role cons"><svg viewBox="-30 -40 60 70" aria-hidden="true"><circle cx="0" cy="-22" r="13"/><path d="M-21 24 Q-21 -4 0 -4 Q21 -4 21 24 Z"/></svg>
+        <div><div class="n">1 команда</div><h3>Консультант</h3><p>Выбирает, кого защитить от схемы.</p>
+        <ul><li>Схемщики выбрали эту команду — доп. кейса нет, Консультанту +5</li><li>себя можно, но не два квартала подряд</li></ul></div></div>
+      <div class="role mimic"><svg viewBox="-30 -40 60 70" aria-hidden="true"><circle cx="0" cy="-22" r="13"/><path d="M-21 24 Q-21 -4 0 -4 Q21 -4 21 24 Z"/></svg>
+        <div><div class="n">1 команда</div><h3>Мимик</h3><p>Ловушка для Схемщиков. Ходить не нужно.</p>
+        <ul><li>Схемщики выбрали Мимика — Мимику +15, схема сгорает</li><li>может нарочно выглядеть слабым, чтобы его выбрали</li></ul></div></div>
+      <div class="role aud"><svg viewBox="-30 -40 60 70" aria-hidden="true"><circle cx="0" cy="-22" r="13"/><path d="M-21 24 Q-21 -4 0 -4 Q21 -4 21 24 Z"/></svg>
+        <div><div class="n">все остальные команды</div><h3>Аудиторы</h3><p>Выбирают, кому днём задать <b>устный вопрос</b>.</p>
+        <ul><li>команда ответила — ей +5</li><li>не ответила — ей −5, Аудитору +5</li><li>одну команду выбрали несколько Аудиторов — вопрос один, результат каждому</li></ul></div></div>
+    </div>
+    <p class="split">Роли тайные: Схемщики не знают, кто Мимик и кого защищает Консультант. Распределение: <b>7 команд</b> — 1 Схемщики, 1 Консультант, 1 Мимик, 4 Аудитора; <b>8 команд</b> — то же и 5 Аудиторов.</p>
+  </section>
+
+  <section>
+    <h2>Схема одного квартала</h2>
+    <div class="flow">
+      <div class="step"><span class="t">2 мин</span><h3>Кейс</h3><p>Все решают на бланке и отправляют ответ с телефона.</p></div>
+      <div class="step night"><span class="t">30 сек</span><h3>Тайные ходы</h3><p>Схемщики — жертва, Консультант — защита, Аудиторы — кому вопрос.</p></div>
+      <div class="step"><span class="t">1 мин</span><h3>Разбор</h3><p>Верный ответ, норма НК, кто ответил верно.</p></div>
+      <div class="step"><span class="t">2 мин</span><h3>Доп. кейс и вопросы</h3><p>Жертва решает доп. кейс, команды отвечают Аудиторам.</p></div>
+      <div class="step"><span class="t">30 сек</span><h3>Итоги</h3><p>Очки на экран, следующий квартал.</p></div>
+    </div>
+    <div class="gate"><span>Ход любой роли выполняется, только если команда</span><span class="ok">ответила на кейс верно ✓</span><span>Иначе ход сгорает</span><span class="no">✗</span></div>
+  </section>
+
+  <section>
+    <h2>Что происходит со схемой</h2>
+    <div class="tree" role="img" aria-label="Дерево решений: что происходит, когда Схемщики выбрали жертву">
+      <div class="node"><div class="q">Схемщики ответили на кейс верно?</div><div class="side"><span class="yes">нет →</span><span class="out n">Схемы нет</span></div></div>
+      <div class="down" data-l="да"></div>
+      <div class="node"><div class="q">Жертва — Мимик?</div><div class="side"><span class="yes">да →</span><span class="out m">Мимику +15, схема сгорает</span></div></div>
+      <div class="down" data-l="нет"></div>
+      <div class="node"><div class="q">Консультант защитил жертву и сам ответил верно?</div><div class="side"><span class="yes">да →</span><span class="out g">Доп. кейса нет, Консультанту +5</span></div></div>
+      <div class="down" data-l="нет"></div>
+      <div class="node"><div class="q">Жертва решает дополнительный кейс днём</div><div></div></div>
+      <div class="final"><span class="out g">Решила: жертве +5</span><span class="out b">Не решила: жертве −10, Схемщикам +10</span></div>
+    </div>
+    <p class="note">Если Схемщики ошиблись в кейсе или выбрали Мимика, доп. кейса в этом квартале нет ни у кого.</p>
+  </section>
+
+  <section>
+    <h2>Очки</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>Событие</th><th style="text-align:right">Очки</th></tr></thead>
+      <tbody>
+        <tr><td>Верный ответ на кейс квартала</td><td class="pts p">+10</td></tr>
+        <tr><td>Жертва решила доп. кейс</td><td class="pts">жертве <span class="p">+5</span></td></tr>
+        <tr><td>Жертва не решила доп. кейс</td><td class="pts">жертве <span class="m">−10</span>, Схемщикам <span class="p">+10</span></td></tr>
+        <tr><td>Консультант защитил жертву</td><td class="pts">Консультанту <span class="p">+5</span></td></tr>
+        <tr><td>Схемщики выбрали Мимика</td><td class="pts">Мимику <span class="p">+15</span></td></tr>
+        <tr><td>Ответили на вопрос Аудитора</td><td class="pts">команде <span class="p">+5</span></td></tr>
+        <tr><td>Не ответили на вопрос Аудитора</td><td class="pts">команде <span class="m">−5</span>, Аудитору <span class="p">+5</span></td></tr>
+      </tbody></table></div>
+    <p class="note">Побеждает команда с наибольшим счётом после 5 кварталов. Знания дают до 50 очков за кейсы и ещё очки за устные ответы, роль — обычно от 5 до 20. Без знаний не выиграть.</p>
+  </section>
+
+  <section>
+    <h2>Пять ведущих</h2>
+    <div class="hosts">
+      <div class="host"><span class="num">1</span><h3>Главный ведущий</h3><p>Запускает этапы, держит таймер, объявляет итоги.</p></div>
+      <div class="host"><span class="num">2</span><h3>Кейс-мастер</h3><p>Докладчик темы квартала: читает кейс и делает разбор.</p></div>
+      <div class="host"><span class="num">3</span><h3>Хранитель схем</h3><p>Видит тайные ходы, выдаёт жертве доп. кейс.</p></div>
+      <div class="host"><span class="num">4</span><h3>Судья вопросов</h3><p>Задаёт вопросы Аудиторов, ставит ✓ или ✗.</p></div>
+      <div class="host"><span class="num">5</span><h3>Протоколист</h3><p>Ведёт счёт, в конце сдаёт таблицу «ФИО → баллы».</p></div>
+    </div>
+    <p class="note">Кейс-мастер меняется каждый квартал: в квартале 1 — докладчик темы 1, в квартале 2 — темы 2 и так далее. Остальные обязанности можно тоже передавать по кругу.</p>
+  </section>
+
+  <section>
+    <h2>Что подготовить</h2>
+    <div class="prep">
+      <div><b>5</b><span>основных кейсов — по одному на тему, с ответом и нормой НК</span></div>
+      <div><b>5</b><span>дополнительных кейсов для жертв схемы, по одному на квартал</span></div>
+      <div><b>25</b><span>коротких устных вопросов для Аудиторов — по 5 на тему</span></div>
+      <div><b>8</b><span>карточек ролей в конвертах и бланков команд — офлайн-часть</span></div>
+    </div>
+  </section>
+</main>

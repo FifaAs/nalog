@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Налоговая отчётность · Команда 8</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: home = grid of topic tiles; topic = full-width slide deck with bottom controls; work = sticky monitor bar + question sheet.
+   Light only by request: mint paper, green + blue as the two brand colours. */
+:root{
+  --bg:#f3f8f6; --card:#ffffff; --ink:#10302f; --muted:#56706f; --line:#d3e4df;
+  --green:#14875a; --green-2:#0f6b47; --green-soft:#e1f4ea;
+  --blue:#1e6bb0; --blue-2:#164f84; --blue-soft:#e2eef9;
+  --bad:#c0392b; --bad-soft:#fdecea; --warn:#b26b00; --warn-soft:#fff3dd;
+  --display:"Manrope","Segoe UI",system-ui,sans-serif;
+  --body:"Golos Text","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+h1,h2,h3{font-family:var(--display);margin:0;line-height:1.15;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.mono{font-family:var(--mono)}
+.label{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wrap{max-width:1200px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+[hidden]{display:none!important}
+
+/* top bar */
+.topbar{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.topbar .wrap{display:flex;align-items:center;gap:14px;padding-block:12px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;text-decoration:none;color:var(--ink)}
+.logo i{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--green),var(--blue));display:grid;place-items:center;color:#fff;font-style:normal;font-size:.8rem}
+.topbar .sp{flex:1}
+.homebtn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:.9rem}
+.homebtn:hover{border-color:var(--ink)}
+
+/* home */
+.hero{padding-block:44px 26px}
+.hero h1{font-size:clamp(2rem,5vw,3.4rem);font-weight:800;letter-spacing:-.02em;max-width:18ch}
+.hero h1 em{font-style:normal;color:var(--green)}
+.hero p{margin-top:14px;color:var(--muted);max-width:62ch;font-size:1.05rem}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-bottom:20px}
+.tile{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:10px;min-height:210px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s,border-color .15s}
+.tile:hover{transform:translateY(-3px);box-shadow:0 14px 30px -18px rgba(16,48,47,.45);border-color:var(--green)}
+.tile:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.tile .n{font-family:var(--display);font-weight:800;font-size:2.6rem;line-height:1;color:var(--green)}
+.tile:nth-child(even) .n{color:var(--blue)}
+.tile h2{font-size:1.2rem;font-weight:700}
+.tile p{color:var(--muted);font-size:.93rem}
+.tile .arts{margin-top:auto;font-family:var(--mono);font-size:.76rem;color:var(--blue-2)}
+.tile.work{background:linear-gradient(135deg,var(--green) 0%,var(--blue) 100%);color:#fff;border:0}
+.tile.work .n,.tile.work p,.tile.work .arts{color:#fff}
+.tile.work p{opacity:.9}
+.tile.small{min-height:auto}
+.sub-tiles{display:grid;grid-template-columns:2fr 1fr;gap:16px;padding-bottom:50px}
+
+/* deck */
+.deck{padding-block:22px 30px}
+.deck-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+.deck-head .tn{font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--green)}
+.deck-head h2{font-size:1.25rem}
+.slide{background:var(--card);border:1px solid var(--line);border-radius:18px;min-height:min(68vh,640px);padding:clamp(20px,4vw,48px);display:flex;flex-direction:column;gap:20px;animation:in .25s ease}
+@keyframes in{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+.slide h3{font-size:clamp(1.4rem,3vw,2.1rem);font-weight:800}
+.slide .lead{font-size:1.1rem;color:var(--muted);max-width:70ch}
+.ctrl{display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap}
+.ctrl .dots{display:flex;gap:6px;flex:1;justify-content:center;flex-wrap:wrap}
+.ctrl .dots button{all:unset;cursor:pointer;width:10px;height:10px;border-radius:50%;background:var(--line)}
+.ctrl .dots button[aria-current="true"]{background:var(--green);width:26px;border-radius:6px}
+.btn{border:0;border-radius:10px;padding:11px 18px;cursor:pointer;font-weight:600;background:var(--green);color:#fff}
+.btn:hover{background:var(--green-2)}
+.btn.blue{background:var(--blue)} .btn.blue:hover{background:var(--blue-2)}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* building blocks */
+.law{border-left:4px solid var(--green);background:var(--green-soft);border-radius:0 12px 12px 0;padding:14px 18px;max-width:80ch}
+.law b.ref{display:block;font-family:var(--mono);font-size:.76rem;color:var(--green-2);letter-spacing:.05em;margin-bottom:4px}
+.law.blue{border-color:var(--blue);background:var(--blue-soft)} .law.blue b.ref{color:var(--blue-2)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.box{border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--card);min-width:0}
+.box h4{font-family:var(--display);font-size:1.02rem;margin:0 0 6px}
+.box p{font-size:.95rem;color:var(--muted)}
+.box.g{background:var(--green-soft);border-color:transparent}
+.box.b{background:var(--blue-soft);border-color:transparent}
+.pick{all:unset;box-sizing:border-box;cursor:pointer;border:1px solid var(--line);border-radius:14px;padding:16px;background:var(--card);display:flex;flex-direction:column;gap:4px}
+.pick:hover{border-color:var(--green)}
+.pick[aria-pressed="true"]{border-color:var(--green);box-shadow:inset 0 0 0 2px var(--green);background:var(--green-soft)}
+.pick:focus-visible{outline:3px solid var(--blue)}
+.pick .k{font-family:var(--mono);font-size:.74rem;color:var(--muted)}
+.pick b{font-family:var(--display);font-size:1.05rem}
+.reveal{border-radius:12px;background:var(--blue-soft);padding:14px 18px;min-height:56px}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;font-size:1rem}
+th,td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font-family:var(--display);font-weight:700;color:var(--blue);font-size:.95rem;background:#f7fbfa}
+td.form{font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--blue);white-space:nowrap}
+.hl{color:var(--blue);font-weight:600}
+.n-right{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.pickrow{cursor:pointer}
+tr.pickrow:hover td{background:#f7fbfa}
+tr.pickrow.on td{background:var(--green-soft)}
+.formula{font-family:var(--mono);font-size:.98rem;background:#f4f8f7;border:1px solid var(--line);border-radius:10px;padding:10px 14px;overflow-x:auto;white-space:nowrap}
+.formula b{color:var(--green-2)}
+.big{font-family:var(--display);font-weight:800;font-size:2rem;color:var(--green-2);font-variant-numeric:tabular-nums}
+label.f{display:flex;flex-direction:column;gap:5px;font-size:.85rem;color:var(--muted)}
+input,select{font:inherit;font-family:var(--mono);font-size:1rem;color:var(--ink);background:#f7fbfa;border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+input:focus,select:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px var(--blue-soft)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fs{border:2px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--card);font-weight:500;opacity:.5;transition:all .25s}
+.fs.on{opacity:1;border-color:var(--green);background:var(--green-soft)}
+.fs.no{opacity:1;border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.arrow{color:var(--muted);font-family:var(--mono)}
+.stamp{display:inline-block;transform:rotate(-5deg);border:3px solid currentColor;border-radius:8px;padding:6px 16px;font-family:var(--display);font-weight:800;letter-spacing:.04em}
+.datecards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.datecard{border:1px solid var(--line);border-top:8px solid var(--blue);border-radius:14px;padding:22px;background:var(--card)}
+.datecard.g{border-top-color:var(--green)}
+.datecard .d{font-family:var(--display);font-weight:800;font-size:clamp(2rem,5vw,3.2rem);color:var(--blue-2);line-height:1.05}
+.datecard.g .d{color:var(--green-2)}
+.datecard p{margin-top:10px;font-size:1.05rem}
+.monthly{border-radius:14px;background:var(--blue-soft);padding:16px 20px}
+.monthly ul{display:flex;flex-wrap:wrap;gap:8px 22px;margin:10px 0 0;padding:0;list-style:none}
+.monthly li::before{content:"●";color:var(--blue);margin-right:6px;font-size:.8em}
+.check{border:1px dashed var(--green);border-radius:14px;padding:16px 18px;background:#fbfefd}
+.check .q{font-weight:600;margin-bottom:10px}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opt{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;cursor:pointer}
+.opt:hover{border-color:var(--ink)}
+.opt.right{background:var(--green-soft);border-color:var(--green);color:var(--green-2);font-weight:600}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.fb{margin-top:10px;font-size:.95rem}
+
+/* work */
+.monitor{position:sticky;top:57px;z-index:15;background:var(--ink);color:#fff}
+.monitor .wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding-block:10px;font-size:.95rem}
+.monitor .who{font-weight:600}
+.monitor .chipv{background:rgba(255,255,255,.14);border-radius:999px;padding:3px 10px;font-family:var(--mono);font-size:.85rem}
+.monitor .leaves{margin-left:auto;font-family:var(--mono);background:var(--green);border-radius:8px;padding:6px 12px}
+.monitor .leaves.has{background:var(--bad);animation:pulse 1s ease 2}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:clamp(18px,3vw,36px);margin-block:24px 50px}
+.warnbox{border:2px solid var(--warn);background:var(--warn-soft);border-radius:14px;padding:16px 18px}
+.warnbox h3{font-size:1.1rem;color:var(--warn);margin-bottom:6px}
+.qlist{display:grid;gap:18px;counter-reset:q}
+.qitem{border:1px solid var(--line);border-radius:14px;padding:18px;counter-increment:q}
+.qitem .qh{display:flex;gap:10px;align-items:baseline;margin-bottom:12px}
+.qitem .qh::before{content:counter(q);font-family:var(--display);font-weight:800;color:var(--green);font-size:1.3rem;min-width:24px}
+.qitem .pts{margin-left:auto;font-family:var(--mono);font-size:.8rem;color:var(--muted);white-space:nowrap}
+.choice{display:grid;gap:8px}
+.choice label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.choice label:has(input:checked){border-color:var(--blue);background:var(--blue-soft)}
+.choice input{width:auto;margin-top:4px}
+.result{text-align:center;display:grid;gap:14px;justify-items:center}
+.score{font-family:var(--display);font-weight:800;font-size:clamp(3rem,10vw,5rem);color:var(--green-2);line-height:1}
+.code{font-family:var(--mono);font-size:clamp(1rem,3vw,1.4rem);background:var(--blue-soft);color:var(--blue-2);border-radius:10px;padding:12px 18px;letter-spacing:.04em;word-break:break-all}
+.overlay{position:fixed;inset:0;background:rgba(16,48,47,.55);display:grid;place-items:center;z-index:50;padding:16px}
+.dialog{background:var(--card);border-radius:18px;padding:26px;max-width:460px;width:100%;display:grid;gap:14px}
+.dialog h3{font-size:1.3rem}
+.namegrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:6px;max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px}
+.nm{all:unset;box-sizing:border-box;cursor:pointer;padding:8px 10px;border-radius:8px;display:flex;gap:8px;align-items:baseline;font-size:.95rem}
+.nm:hover{background:var(--green-soft)}
+.nm[aria-pressed="true"]{background:var(--green);color:#fff}
+.nm[aria-pressed="true"] .no{color:#fff}
+.nm .no{font-family:var(--mono);font-size:.78rem;color:var(--muted);min-width:22px}
+.nm.done{opacity:.45;cursor:not-allowed;text-decoration:line-through}
+.nm:focus-visible{outline:3px solid var(--blue)}
+.search{margin-bottom:8px}
+.jt td,.jt th{padding:9px 10px;font-size:.9rem}
+table.sm td,table.sm th{padding:10px 12px;font-size:.92rem}
+
+/* topic 1: plain-language visuals */
+.ref-s{display:inline-block;font-family:var(--mono);font-size:.72rem;font-weight:500;color:var(--blue-2);background:var(--blue-soft);border-radius:6px;padding:1px 7px;letter-spacing:.02em;vertical-align:middle}
+.box h4 .ref-s{margin-left:6px}
+.ul{margin:0;padding-left:18px;display:grid;gap:5px;font-size:.98rem}
+.ul li::marker{color:var(--green)}
+.tree{display:grid;justify-items:center;gap:0}
+.tree-root{background:var(--ink);color:#fff;font-family:var(--display);font-weight:800;font-size:1.15rem;border-radius:12px;padding:12px 22px;display:flex;gap:10px;align-items:center}
+.tree-root .ref-s{background:rgba(255,255,255,.15);color:#fff}
+.tree-lines{width:60%;height:28px;position:relative;border:2px solid var(--line);border-bottom:0;border-radius:12px 12px 0 0;margin-top:14px}
+.tree-lines::before{content:"";position:absolute;left:50%;top:-16px;height:14px;border-left:2px solid var(--line)}
+.tree-lines span{display:none}
+.tree-kids{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%}
+.tree-kid{border-radius:14px;padding:16px 18px;display:grid;gap:6px;align-content:start}
+.tree-kid.b{background:var(--blue-soft)}.tree-kid.g{background:var(--green-soft)}
+.tree-kid>b{font-family:var(--display);font-size:1.15rem}
+.tree-kid .ref-s{justify-self:start}
+.tree-kid ul{margin:0;padding-left:18px;color:var(--muted);font-size:.95rem}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.facts>div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:4px;align-content:start}
+.facts .fi{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.facts .ref-s{justify-self:start}
+.eqs{display:grid;gap:10px}
+.eq{display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-radius:12px;padding:14px 18px;font-size:1.1rem}
+.eq.b{background:var(--blue-soft)}.eq.g{background:var(--green-soft)}
+.eq b{font-family:var(--display);font-size:1.25rem}
+.eq span{font-family:var(--mono);color:var(--muted)}
+.eq i{font-style:normal;background:var(--card);border-radius:8px;padding:4px 10px}
+.life{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding-top:4px}
+.life-track{position:absolute;left:10%;right:10%;top:22px;height:4px;background:var(--line);border-radius:2px}
+.life-track i{display:block;height:100%;width:0;background:var(--green);border-radius:2px;transition:width .5s}
+.life-node{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:grid;justify-items:center;text-align:center;gap:4px;padding:0 4px 8px;border-radius:12px}
+.life-node:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.life-node .dot{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:800;background:var(--card);border:3px solid var(--line);color:var(--muted);transition:all .25s}
+.life-node .when{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.life-node .ev{font-size:.9rem;line-height:1.25}
+.life-node .kind{font-family:var(--display);font-size:.98rem}
+.life-node.past .dot{border-color:var(--green);color:var(--green-2)}
+.life-node.on .dot{background:var(--green);border-color:var(--green);color:#fff;transform:scale(1.15)}
+.life-node.on.b .dot{background:var(--blue);border-color:var(--blue)}
+.life-node.on.bad .dot{background:var(--bad);border-color:var(--bad)}
+.life-node.on .kind{color:var(--green-2)}.life-node.on.b .kind{color:var(--blue-2)}.life-node.on.bad .kind{color:var(--bad)}
+.life-out{border-radius:14px;padding:16px 20px;display:grid;gap:6px;border-left:6px solid var(--green);background:var(--green-soft);animation:in .25s ease}
+.life-out.b{border-color:var(--blue);background:var(--blue-soft)}.life-out.bad{border-color:var(--bad);background:var(--bad-soft)}
+.life-out .lo-kind{font-family:var(--display);font-weight:800;font-size:1.4rem}
+.life-out .ref-s{justify-self:start}
+@media (max-width:700px){
+  .tree-kids,.facts{grid-template-columns:1fr}.tree-lines{display:none}.tree-root{margin-bottom:12px}
+  .life{grid-template-columns:1fr;gap:4px}.life-track{left:19px;right:auto;top:20px;bottom:20px;width:4px;height:auto}
+  .life-track i{width:100%!important;height:0}
+  .life-node{grid-template-columns:40px auto;justify-items:start;text-align:left;column-gap:12px;row-gap:0;padding:4px 0}
+  .life-node .dot{grid-row:span 3}
+}
+
+/* home: practice tile */
+.tile.practice{background:var(--blue-soft);border-color:var(--blue)}
+.tile.practice .n{color:var(--blue)}
+/* practice */
+.pr-sheet{display:grid;gap:16px;max-width:860px;margin-inline:auto}
+.pr-lead{color:var(--muted);margin-top:6px;max-width:65ch}
+.pr-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.pr-score{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.pr-bar{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.pr-bar i{height:8px;border-radius:4px;background:var(--line)}
+.pr-bar i.cur{background:var(--blue)}.pr-bar i.ok{background:var(--green)}.pr-bar i.no{background:var(--bad)}
+.pr-q{display:grid;gap:14px}
+.pr-q h3{font-size:clamp(1.15rem,2.4vw,1.45rem)}
+.pr-opts{display:grid;gap:8px}
+.pr-opt{all:unset;box-sizing:border-box;cursor:pointer;display:flex;gap:12px;align-items:baseline;border:2px solid var(--line);border-radius:12px;padding:12px 14px;background:var(--card);line-height:1.35}
+.pr-opt:hover:not(:disabled){border-color:var(--blue)}
+.pr-opt:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.pr-opt:disabled{cursor:default}
+.pr-opt .L{font-family:var(--display);font-weight:800;color:var(--blue);min-width:1.2em}
+.pr-opt.right{border-color:var(--green);background:var(--green-soft)}.pr-opt.right .L{color:var(--green-2)}
+.pr-opt.wrong{border-color:var(--bad);background:var(--bad-soft)}.pr-opt.wrong .L{color:var(--bad)}
+.pr-why{display:grid;gap:8px;border-radius:12px;background:#f7fbfa;border:1px solid var(--line);padding:14px 16px;animation:in .25s ease}
+.pr-why .ref-s{justify-self:start}
+.pr-verdict{font-family:var(--display);font-weight:800;font-size:1.15rem}
+.pr-verdict.ok{color:var(--green-2)}.pr-verdict.no{color:var(--bad)}
+.pr-review{display:grid;gap:10px}
+.pr-ritem{border-left:4px solid var(--green);background:var(--green-soft);border-radius:0 10px 10px 0;padding:10px 14px;display:grid;gap:4px;font-size:.95rem}
+.pr-ritem.no{border-color:var(--bad);background:var(--bad-soft)}
+.pr-rw{color:var(--muted)}
+/* admin */
+.adm{padding-block:22px 50px;display:grid;gap:16px}
+.adm-body{display:grid;gap:16px}
+.adm-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.adm-saved{flex:1;font-family:var(--mono);font-size:.8rem;color:var(--muted);min-width:120px}
+.adm-card{margin:0;display:grid;gap:12px}
+.adm-card summary{cursor:pointer}
+.adm-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+.adm-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.adm-bank summary{cursor:pointer;font-weight:600;padding:6px 0}
+.adm-list{display:grid;gap:8px;margin-top:8px}
+.adm-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.adm-item.on{border-color:var(--green);background:var(--green-soft)}
+.adm-item p{font-size:.93rem}
+.adm-ans{color:var(--green-2);font-size:.85rem!important;margin-top:2px}
+.adm-qtabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.adm-qtab{all:unset;box-sizing:border-box;cursor:pointer;text-align:center;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 6px;font-weight:700;font-family:var(--display)}
+.adm-qtab small{display:block;font-family:var(--mono);font-weight:400;font-size:.72rem;color:var(--muted)}
+.adm-qtab[aria-pressed="true"]{background:var(--ink);color:#fff;border-color:var(--ink)}.adm-qtab[aria-pressed="true"] small{color:#a9c4bf}
+.adm-qtab:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.adm-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.adm-sum>div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:2px}
+.adm-sum b{font-family:var(--display);font-size:1.5rem;font-variant-numeric:tabular-nums}
+.adm-sum small{color:var(--muted);font-size:.82rem}
+.adm-t td{vertical-align:middle}
+.yn{display:inline-flex;gap:6px;flex-wrap:wrap}
+.ynb{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:600;font-size:.9rem}
+.ynb.y[aria-pressed="true"]{background:var(--green);border-color:var(--green);color:#fff}
+.ynb.n[aria-pressed="true"]{background:var(--bad);border-color:var(--bad);color:#fff}
+.mv{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.9rem;color:var(--muted)}
+.mv select{width:auto;min-width:150px;padding:6px 10px}
+.mv-off{font-size:.8rem;color:var(--bad);margin-top:4px}
+.rchip{display:inline-block;font-family:var(--mono);font-size:.72rem;border-radius:999px;padding:2px 8px;margin-top:3px;color:#fff}
+.rchip.r-mafia{background:#2a2f37}.rchip.r-cons{background:var(--green)}.rchip.r-mimic{background:#7d45b3}.rchip.r-aud{background:#a86400}
+td.cur{background:var(--blue-soft)}
+.ev{border-left:4px solid var(--blue);background:var(--blue-soft);border-radius:0 10px 10px 0;padding:10px 14px}
+.ev.hit{border-color:var(--bad);background:var(--bad-soft)}.ev.good{border-color:var(--green);background:var(--green-soft)}
+/* projector screen */
+body.screen-mode .topbar{display:none}
+body.screen-mode{background:#0f2b2a}
+.scr{min-height:100vh;color:#eaf4f1;padding-block:28px 40px;padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));display:grid;grid-template-rows:auto 1fr;gap:20px;max-width:1500px;margin:0 auto}
+.scr .label{color:#9cc2bb}
+.scr-top{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.scr-timer{font-family:var(--mono);font-size:clamp(1.6rem,4vw,3rem);background:#173f3d;border-radius:14px;padding:6px 18px;font-variant-numeric:tabular-nums}
+.scr-timer.out{background:var(--bad);color:#fff}
+.scr-body{display:grid;gap:22px;align-content:center}
+.scr-q{font-size:clamp(1.6rem,3.6vw,3rem);font-weight:800;line-height:1.2;max-width:38ch}
+.scr-opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.scr-opt{display:flex;gap:16px;align-items:baseline;border:2px solid #2d5a57;border-radius:16px;padding:16px 20px;font-size:clamp(1.1rem,2.2vw,1.7rem);background:#153634;transition:opacity .3s}
+.scr-opt .L{font-family:var(--display);font-weight:800;color:#7fd3ff}
+.scr-opt.right{border-color:#3fbf86;background:#1b4d3a}.scr-opt.right .L{color:#7fe0b0}
+.scr-opt.dim{opacity:.35}
+.scr-expl{font-size:clamp(1rem,1.8vw,1.4rem);background:#173f3d;border-radius:14px;padding:16px 20px;max-width:70ch}
+.scr-expl .ref-s{background:#0f2b2a;color:#9cc7f2}
+.scr-idle{display:grid;justify-items:center;gap:14px;text-align:center}
+.scr-idle h1{font-size:clamp(2rem,6vw,4.5rem)}
+.scr-idle p{color:#9cc2bb;font-size:1.3rem}
+.scr-logo{width:84px;height:84px;border-radius:22px;background:linear-gradient(135deg,var(--green),var(--blue));display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:2.4rem;color:#fff}
+@media (max-width:900px){.adm-grid{grid-template-columns:minmax(0,1fr)}.adm-sum{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:600px){.adm-qtabs{grid-template-columns:repeat(3,minmax(0,1fr))}.scr-opts{grid-template-columns:minmax(0,1fr)}.adm-item{grid-template-columns:minmax(0,1fr)}}
+
+/* game: «Налоговая мафия» */
+.tile.game{background:var(--ink);color:#fff;border:0}
+.tile.game .n,.tile.game p,.tile.game .arts{color:#fff}.tile.game p{opacity:.85}
+.g-wrap{padding-block:22px 50px;display:grid;gap:18px}
+.g-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.g-head h2{font-size:clamp(1.4rem,3vw,2rem);margin-top:4px}
+.g-h3{font-size:1.25rem;margin-top:8px}
+.g-muted{color:var(--muted)}
+.g-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.g-go{min-height:auto}.g-go.blue{border-color:var(--blue)}.g-go:first-child{border-color:var(--green);box-shadow:inset 0 0 0 2px var(--green)}
+.g-body{display:grid;gap:16px}
+.g-net{font-family:var(--mono);font-size:.75rem;border-radius:999px;padding:3px 10px;background:var(--green-soft);color:var(--green-2);white-space:nowrap}
+.g-net.off{background:var(--bad-soft);color:var(--bad)}
+.g-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
+.g-top h3{font-size:1.3rem;margin-top:4px}
+.g-topr{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.g-timer{font-family:var(--mono);font-weight:500;font-size:1.15rem;background:var(--ink);color:#fff;border-radius:10px;padding:6px 12px}
+.g-timer.out{background:var(--bad)}
+.g-join{display:grid;gap:14px}
+.g-join.sheet{margin:0}
+.g-join .g-net{justify-self:start}
+.g-tabs{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:5px;justify-self:start;max-width:100%}
+.g-tab{all:unset;box-sizing:border-box;cursor:pointer;padding:9px 16px;border-radius:9px;font-weight:600;color:var(--muted);text-align:center}
+.g-tab:hover{color:var(--ink)}
+.g-tab[aria-selected="true"]{background:var(--green);color:#fff}
+.g-tab:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.g-code{font-family:var(--mono);font-size:1.35rem;letter-spacing:.18em;color:var(--blue-2);background:var(--blue-soft);border-radius:8px;padding:2px 10px}
+.g-coderow{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;background:var(--card);border:1px dashed var(--blue);border-radius:14px;padding:12px 16px}
+.g-codein{font-size:1.5rem!important;letter-spacing:.25em;text-transform:uppercase;max-width:220px}
+.g-names{max-height:300px}
+.g-q{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.g-qt{font-size:1.12rem;font-weight:600;margin:6px 0 14px}
+.g-opts,.g-pickteams{display:grid;gap:8px}
+.g-pickteams{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.g-opt{all:unset;box-sizing:border-box;cursor:pointer;border:2px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;gap:12px;align-items:baseline;background:var(--card);line-height:1.35}
+.g-opt:hover{border-color:var(--blue)}
+.g-opt:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.g-opt .L{font-family:var(--display);font-weight:800;color:var(--blue);min-width:1.2em}
+.g-opt[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft);box-shadow:inset 0 0 0 1px var(--blue)}
+.g-opt.right{border-color:var(--green);background:var(--green-soft)}.g-opt.right .L{color:var(--green-2)}
+.g-opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.g-opt[disabled]{opacity:.45;cursor:not-allowed}
+.g-send{justify-self:start;font-size:1.05rem;padding:13px 22px}
+.g-teams{display:flex;flex-wrap:wrap;gap:8px}
+.g-chip{border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:var(--card);font-weight:600;font-size:.95rem;cursor:default}
+button.g-chip{cursor:pointer}
+.g-chip.done{border-color:var(--green);background:var(--green-soft);color:var(--green-2)}
+.g-chip.miss{border-color:var(--bad);background:var(--bad-soft);color:var(--bad)}
+.rolecard{border-radius:16px;padding:20px;color:#fff;display:grid;gap:8px;align-content:start}
+.rolecard h3{font-size:1.35rem}
+.rolecard p{font-size:.95rem;opacity:.95}
+.rolecard.mafia{background:#2a2f37}.rolecard.inspector{background:var(--blue-2)}.rolecard.consultant{background:var(--green-2)}.rolecard.honest{background:#4f6866}
+.g-secret{display:grid;gap:10px}
+.g-rolebtn{justify-self:start}
+.g-intel{display:grid;gap:6px;margin-top:6px;border-top:1px solid rgba(255,255,255,.25);padding-top:10px}
+.g-int{background:rgba(255,255,255,.12);border-radius:8px;padding:6px 10px;font-size:.92rem}
+.g-int.bad{background:rgba(255,120,100,.28)}.g-int.good{background:rgba(120,255,180,.22)}
+.g-evs{display:grid;gap:8px}
+.g-ev{border-left:4px solid var(--blue);background:var(--blue-soft);border-radius:0 10px 10px 0;padding:10px 14px}
+.g-ev.hit{border-color:var(--bad);background:var(--bad-soft)}.g-ev.saved{border-color:var(--green);background:var(--green-soft)}
+.g-susp{display:grid;gap:6px}
+.g-srow{display:grid;grid-template-columns:minmax(120px,1fr) 2fr auto;gap:10px;align-items:center}
+.g-bar{height:12px;background:var(--warn);border-radius:6px;min-width:6px}
+.g-verdict{border-radius:14px;padding:16px 18px;font-weight:600;background:var(--blue-soft);border:2px solid var(--blue)}
+.g-verdict.caught{background:var(--green-soft);border-color:var(--green);color:var(--green-2)}
+.g-verdict.miss{background:var(--warn-soft);border-color:var(--warn);color:#7a4a00}
+.g-verdict.big{font-size:clamp(1.2rem,2.4vw,1.8rem)}
+.g-win{border-radius:16px;padding:20px 22px;color:#fff}
+.g-win h3{font-size:clamp(1.3rem,3vw,2rem);margin-top:4px}
+.g-win.honest{background:linear-gradient(135deg,var(--green),var(--blue))}.g-win.mafia{background:#2a2f37}
+tr.g-maf td{background:#f1f1f3}
+.g-ctl{display:grid;gap:14px;margin:0}
+.g-row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+.g-row label.f{flex:1 1 180px}
+.g-shead{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.g-count{font-family:var(--mono);font-size:1.1rem}
+.g-big{font-family:var(--display);font-weight:800;font-size:clamp(1.4rem,3vw,2.2rem)}
+.g-lobby{display:grid;grid-template-columns:minmax(260px,320px) 1fr;gap:24px;align-items:start}
+.g-qr{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;display:grid;gap:10px;justify-items:center;text-align:center}
+.g-qr #qrbox img,.g-qr #qrbox canvas{max-width:100%;height:auto}
+.g-tlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:8px}
+.g-day{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;align-items:start}
+.g-screen .g-qt{font-size:clamp(1.25rem,2.4vw,1.9rem)}
+.g-screen .g-opt{font-size:clamp(1rem,1.8vw,1.35rem)}
+.g-screen .g-chip{font-size:1.05rem;padding:8px 14px}
+body.g-screen-mode .wrap{max-width:1500px}
+.g-print-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g-blank{border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--card)}
+.g-blank-t{width:100%;border-collapse:collapse;font-size:.9rem}
+.g-blank-t th,.g-blank-t td{border:1px solid #9bb;padding:8px;height:64px}
+.g-blank-t th{height:auto;color:var(--ink);background:#f2f7f5}
+@media print{
+  .topbar,#monitor,.noprint,.g-head .label{display:none!important}
+  body{background:#fff;font-size:12pt}
+  .rolecard{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .printcard{break-inside:avoid}
+  .g-blank{break-before:page;border:0}
+}
+@media (max-width:900px){.g-lobby,.g-day{grid-template-columns:1fr}}
+@media (max-width:600px){.g-print-cards{grid-template-columns:1fr}.g-srow{grid-template-columns:1fr 1fr auto}}
+
+@media (max-width:900px){.tiles{grid-template-columns:1fr 1fr}.sub-tiles{grid-template-columns:1fr}}
+@media (max-width:600px){.tiles{grid-template-columns:1fr}.datecards{grid-template-columns:1fr}.monitor{top:57px}.monitor .leaves{margin-left:0}
+  td.form{font-size:1.2rem} th,td{padding:10px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="logo" href="#home"><i>8</i><span>Налоговая отчётность</span></a>
+    <span class="sp"></span>
+    <button class="homebtn" type="button" id="homeBtn" hidden>Все темы</button>
+  </div>
+</header>
+
+<div id="monitor" class="monitor" hidden>
+  <div class="wrap">
+    <span class="who" id="mWho"></span>
+    <span class="chipv" id="mVar"></span>
+    <span class="chipv" id="mTime">00:00</span>
+    <span class="leaves" id="mLeaves">Переходов со страницы: 0</span>
+  </div>
+</div>
+
+<main id="view"></main>
+
+<div class="overlay" id="overlay" hidden><div class="dialog" id="dialog" role="dialog" aria-modal="true"></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
+<script src="db.js"></script>
+<script src="cases.js"></script>
+<script src="extra.js"></script>
+<script>
+(function(){
+"use strict";
+/* ============ helpers ============ */
+const MRP=4325, MZP=85000, VY=30*MRP;
+const $=(s,r=document)=>r.querySelector(s);
+const view=$('#view');
+const nf=n=>Math.round(n).toLocaleString('ru-RU').replace(/[  ,]/g,' ');
+const tg=n=>nf(n)+' ₸';
+function h(html){const t=document.createElement('template');t.innerHTML=html.trim();return t.content.firstElementChild}
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function dialog(html,buttons){const o=$('#overlay'),d=$('#dialog');d.innerHTML=html;const row=h('<div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"></div>');
+ buttons.forEach(b=>{const x=h('<button type="button" class="btn '+(b.cls||'')+'">'+b.t+'</button>');x.onclick=()=>{o.hidden=true;b.on&&b.on()};row.appendChild(x)});d.appendChild(row);o.hidden=false;row.lastElementChild.focus()}
+
+/* quick check block used on slides */
+function check(q,opts,right,expl){const c=h('<div class="check"><div class="q">'+q+'</div><div class="opts"></div><div class="fb" hidden></div></div>');const o=c.querySelector('.opts'),fb=c.querySelector('.fb');let done=false;
+ opts.forEach((t,i)=>{const b=h('<button type="button" class="opt">'+t+'</button>');b.onclick=()=>{if(done)return;done=true;o.children[right].classList.add('right');if(i!==right)b.classList.add('wrong');fb.hidden=false;fb.innerHTML=(i===right?'<b style="color:var(--green-2)">Верно.</b> ':'<b style="color:var(--bad)">Неверно.</b> ')+expl};o.appendChild(b)});return c}
+function picks(items,detail){const wrap=h('<div style="display:grid;gap:12px"></div>');const g=h('<div class="cols"></div>');const r=h('<div class="reveal"></div>');
+ items.forEach((it,i)=>{const b=h('<button type="button" class="pick" aria-pressed="false"><span class="k">'+it[0]+'</span><b>'+it[1]+'</b></button>');b.onclick=()=>{g.querySelectorAll('.pick').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');r.innerHTML=it[2]};g.appendChild(b)});
+ r.innerHTML=detail||'Нажмите на карточку, чтобы увидеть пояснение и пример.';wrap.append(g,r);return wrap}
+
+/* ============ TOPICS ============ */
+const topics=[
+{id:'t1',n:'01',title:'Налоговая отчётность: что это и какой она бывает',short:'Что такое налоговая отчётность, пять её видов на примере одного ТОО, когда её не сдают, как исправить и поставить на паузу.',arts:'гл. 9, ст. 112–117 НК РК',
+ slides:[
+ s=>{s.append(h('<h3>Где это в законе</h3>'),h('<p class="lead">Всё о налоговой отчётности собрано в одной главе Налогового кодекса — глава 9, статьи 112–117.</p>'),
+   h(`<div class="tbl"><table class="sm"><thead><tr><th>Статья</th><th>Название (как в кодексе)</th></tr></thead><tbody>
+   <tr><td><b>112</b></td><td>Налоговые формы</td></tr>
+   <tr><td><b>113</b></td><td>Налоговое заявление</td></tr>
+   <tr style="background:var(--green-soft)"><td><b>114</b></td><td>Налоговая отчетность, виды налоговой отчетности</td></tr>
+   <tr><td><b>115</b></td><td>Основные положения по представлению налоговой отчетности</td></tr>
+   <tr><td><b>116</b></td><td>Основные положения, связанные с представлением дополнительной налоговой отчетности и налоговой отчетности по уведомлению</td></tr>
+   <tr><td><b>117</b></td><td>Основные положения, связанные с приостановлением и возобновлением представления налоговой отчетности</td></tr></tbody></table></div>`),
+   h('<p style="color:var(--muted);font-size:.9rem">Налоговый кодекс РК от 18.07.2025 № 214-VIII, редакция с изменениями от 01.07.2026.</p>'))},
+ s=>{s.append(h('<h3>Налоговые формы: заявление и отчётность</h3>'),h('<p class="lead">Всё, что компания подаёт в налоговую, называется <b>налоговыми формами</b>. Их два вида (п. 1 ст. 112).</p>'),
+   h(`<div class="tree">
+     <div class="tree-root">Налоговые формы<span class="ref-s">п. 1 ст. 112</span></div>
+     <div class="tree-lines"><span></span><span></span></div>
+     <div class="tree-kids">
+      <div class="tree-kid b"><b>Налоговое заявление</b><span class="ref-s">ст. 113</span><p>Компания <b>просит</b> о чём-то или пользуется правом.</p><ul><li>приостановить отчётность</li><li>вернуть или зачесть переплату</li></ul></div>
+      <div class="tree-kid g"><b>Налоговая отчётность</b><span class="ref-s">ст. 114</span><p>Компания <b>сообщает</b>, сколько налога насчитала.</p><ul><li>декларации (например, 300.00 по НДС)</li><li>расчёты</li></ul></div>
+     </div></div>`),
+   h('<div class="facts"><div><span class="fi">Язык</span><b>казахский или русский</b><span class="ref-s">п. 2 ст. 112</span></div><div><span class="fi">Как подать</span><b>на бумаге или электронно</b><span class="ref-s">п. 2 ст. 112</span></div><div><span class="fi">Сколько хранить</span><b>весь срок исковой давности</b><span class="ref-s">п. 3 ст. 112</span></div></div>'))},
+ s=>{s.append(h('<h3>Что такое налоговая отчётность</h3>'),
+   h('<div class="law"><b class="ref">П. 1 СТ. 114 — ПРОСТЫМИ СЛОВАМИ</b>Документ, в котором компания рассказывает о себе, своих доходах и имуществе и <b>сама считает налоги</b>. Государство счёт не присылает — сумму определяет компания, налоговая потом проверяет.</div>'),
+   h('<div class="eqs"><div class="eq b"><b>Декларация</b><span>=</span><i>сама декларация</i><span>+</span><i>приложения</i></div><div class="eq g"><b>Расчёт</b><span>=</span><i>сам расчёт</i><span>+</span><i>приложения</i></div></div>'),
+   h('<p style="color:var(--muted);font-size:.92rem">Из чего состоит отчётность — п. 2 ст. 114. Приложения — это расшифровки строк основной формы; пустые приложения не подают (пп. 3 п. 4 ст. 114).</p>'))},
+ s=>{s.append(h('<h3>Пять видов налоговой отчётности</h3>'),h('<p class="lead">Вид отвечает на вопрос «почему вы сейчас подаёте отчёт». Пройдите путь одного ТОО — нажимайте на этапы.</p>'));
+   const K=[
+    ['май 2026','Регистрация ТОО','Первоначальная','g','За период, в котором ТОО зарегистрировали или у него впервые появился налог.','ТОО зарегистрировано в мае → 200.00 за II квартал.','пп. 1 п. 3 ст. 114'],
+    ['III–IV кв.','Обычная работа','Очередная','b','За все следующие периоды после первоначальной.','То же ТОО сдаёт 200.00 за III и IV квартал.','пп. 2 п. 3 ст. 114'],
+    ['весна 2027','Нашли ошибку сами','Дополнительная','g','Исправляет или дополняет уже сданный отчёт.','В 300.00 за II квартал забыли одну продажу.','пп. 3 п. 3 ст. 114, ст. 116'],
+    ['лето 2027','Пришло уведомление','По уведомлению','b','Подают, когда налоговая прислала уведомление по этому периоду.','Уведомление о расхождении по НДС с поставщиком.','пп. 4 п. 3 ст. 114, ст. 116'],
+    ['2028','Закрытие ТОО','Ликвидационная','bad','При закрытии, ликвидации, реорганизации или снятии с учёта по НДС.','ТОО закрывается или снимается с учёта по НДС → ликвидационная 300.00.','пп. 5 п. 3 ст. 114']];
+   const life=h('<div class="life"><div class="life-track"><i></i></div></div>');const tr=life.querySelector('.life-track i');
+   const out=h('<div class="life-out"></div>');let cur=-1,timer=null;
+   const pick=i=>{cur=i;life.querySelectorAll('.life-node').forEach((n,j)=>{n.classList.toggle('on',j===i);n.classList.toggle('past',j<i);n.setAttribute('aria-pressed',j===i)});tr.style.width=(i/(K.length-1)*100)+'%';
+    const k=K[i];out.className='life-out '+k[3];out.innerHTML='<div class="lo-kind">'+k[2]+'</div><p><b>Когда:</b> '+k[4]+'</p><p><b>Пример:</b> '+k[5]+'</p><span class="ref-s">'+k[6]+'</span>'};
+   K.forEach((k,i)=>{const b=h('<button type="button" class="life-node '+k[3]+'" aria-pressed="false"><span class="dot">'+(i+1)+'</span><span class="when">'+k[0]+'</span><span class="ev">'+k[1]+'</span><b class="kind">'+k[2]+'</b></button>');b.onclick=()=>{clearInterval(timer);pick(i)};life.append(b)});
+   const play=h('<button type="button" class="btn ghost" style="align-self:flex-start">▶ Пройти весь путь</button>');
+   play.onclick=()=>{clearInterval(timer);let i=0;pick(0);timer=setInterval(()=>{i++;if(i>=K.length){clearInterval(timer);return}pick(i)},1700)};
+   s.append(life,out,play);pick(0);
+   const stop=new MutationObserver(()=>{if(!s.isConnected){clearInterval(timer);stop.disconnect()}});stop.observe(document.body,{childList:true,subtree:true});
+   s.append(h('<p style="color:var(--muted);font-size:.88rem">Исключения: заявление о ввозе товаров на виды не делится; особые виды у декларации об активах (п. 3 ст. 114, п. 5 ст. 422).</p>'))},
+ s=>{s.append(h('<h3>Когда отчёт не сдают, а когда сдавать запрещено</h3>'),
+   h(`<div class="cols"><div class="box g"><h4>Можно не сдавать <span class="ref-s">п. 4 ст. 114</span></h4><ul class="ul">
+      <li>самозанятым на спецрежиме</li><li>если нет объекта налогообложения — нечего облагать</li><li>пустые приложения к декларации</li></ul></div>
+     <div class="box" style="background:var(--bad-soft);border-color:transparent"><h4>Запрещено сдавать <span class="ref-s">п. 5 ст. 114</span></h4><ul class="ul">
+      <li>компании, чью регистрацию суд признал недействительной</li><li>дополнительную, которая уменьшает КПН или НДС по сделкам с уже закрытой компанией</li></ul></div></div>`))},
+ s=>{s.append(h('<h3>Исправление и пауза в отчётности</h3>'),
+   h(`<div class="cols"><div class="box b"><h4>Как исправить <span class="ref-s">ст. 116 п. 1</span></h4><ul class="ul"><li>подать дополнительную или по уведомлению</li><li>сами нашли и доплатили — <b>штрафа нет</b></li></ul></div>
+     <div class="box g"><h4>Когда исправлять нельзя <span class="ref-s">ст. 116 п. 3</span></h4><ul class="ul"><li>идёт налоговая проверка этого периода</li><li>идёт жалоба на итоги проверки</li><li>в отчёте просите вернуть НДС</li><li>и ещё 2 редких случая (авансы КПН, декларация кандидатов на выборах)</li></ul></div>
+     <div class="box b"><h4>Можно поставить на паузу <span class="ref-s">ст. 117 п. 1</span></h4><ul class="ul"><li>нет деятельности → можно приостановить отчётность</li><li>не дольше срока исковой давности</li><li>на паузе нельзя выписывать ЭСФ</li><li>есть что облагать → паузы нет</li></ul></div>
+     <div class="box" style="background:var(--bad-soft);border-color:transparent"><h4>Откажут в паузе <span class="ref-s">ст. 117 п. 3</span></h4><ul class="ul"><li>есть долг по налогам</li><li>компания в реестре бездействующих</li><li>не исполнено уведомление</li></ul></div></div>`))},
+ s=>{s.append(h('<h3>Где ещё в кодексе говорится об отчётности</h3>'),
+   h(`<div class="tbl"><table class="sm"><thead><tr><th>Статья</th><th>Коротко</th></tr></thead><tbody>
+   <tr><td><b>ст. 65</b></td><td>Сдавать и исправлять отчёт можно в пределах исковой давности: 3 года, для крупного бизнеса — 5 лет</td></tr>
+   <tr><td><b>ст. 81–83</b></td><td>Уведомления налоговой — из-за них подают отчётность по уведомлению</td></tr>
+   <tr><td><b>ст. 86</b></td><td>Не исполнили уведомление — могут заблокировать расходы по счёту (пп. 4 п. 2)</td></tr>
+   <tr><td><b>ст. 108</b></td><td>Не сдаёт отчёты 12 месяцев — попадает в реестр бездействующих</td></tr>
+   <tr><td><b>ст. 115</b></td><td>Как сдавать отчёт — тема 2</td></tr>
+   <tr><td><b>ст. 136–137</b></td><td>Камеральный контроль: налоговая сверяет отчёт с другими данными</td></tr>
+   <tr><td><b>ст. 359, 445, 505, 562, 727</b></td><td>Сроки сдачи 100.00, 200.00, 300.00, 910.00 — тема 3</td></tr></tbody></table></div>`),
+   h('<div class="law blue"><b class="ref">С 2026 ГОДА (КГД)</b>Отменены госуслуги «Отзыв налоговой отчётности» и «Продление срока представления налоговой отчётности».</div>'))}
+ ]},
+{id:'t2',n:'02',title:'Порядок декларирования',short:'Четыре шага подачи, статус «Документ принят», приостановление, исправление после приёма, автоматическая нулевая отчётность, практический кейс.',arts:'ст. 114–117, 136–137 НК РК',
+ slides:[
+ s=>{s.append(h('<h3>Что такое налоговое декларирование</h3>'),h('<p class="lead">Декларирование — это представление предприятием сведений о своих налоговых обязательствах: о налоговой базе и исчисленной сумме налога.</p>'));
+   const fl=h('<div class="flow"></div>');['Подготовка декларации','Подача','Проверка результата приёма','Исправление сведений (при необходимости)'].forEach((x,i,a)=>{fl.append(h('<span class="fs on">'+x+'</span>'));if(i<a.length-1)fl.append(h('<span class="arrow">→</span>'))});
+   s.append(fl,h('<div class="law"><b class="ref">ПРАВОВАЯ ОСНОВА</b>Статьи 114–117 Налогового кодекса РК от 18.07.2025 № 214-VIII (редакция с изменениями от 01.07.2026). Формы и правила их заполнения утверждены приказом Министра финансов РК от 12.11.2025 № 695.</div>'))},
+ s=>{s.append(h('<h3>Как предприятие подаёт декларацию: 4 шага</h3>'),h('<p class="lead">Нажимайте на шаги по порядку.</p>'),
+   picks([
+    ['шаг 1 · п. 2 ст. 115','Определить формы и период','<b>Что сдаёт ТОО и за какой период.</b> Обязательства зависят от налогового режима и операций за период. После налоговой регистрации предприятие указывает в веб-приложении формы, которые обязано представлять. Если из-за изменения деятельности появились новые обязательные формы, список обновляют <b>до истечения срока</b> их представления.'],
+    ['шаг 2 · п. 4 ст. 114, п. 3 ст. 115','Заполнить декларацию и приложения','<b>Сверка с документами.</b> Показатели сверяют с налоговыми регистрами и первичными документами. Проверяют БИН, налоговый период, вид отчётности, обязательные поля и приложения. Приложение можно не подавать, если для него нет данных (подп. 3 п. 4 ст. 114). Форма и пояснения — по приказу Минфина № 695.'],
+    ['шаг 3 · п. 3 и 8 ст. 115','Подписать и отправить','<b>ЭЦП и канал подачи.</b> В Кабинете налогоплательщика ИСНА уполномоченное лицо подписывает форму электронной цифровой подписью и отправляет. Можно подать и на бумаге, через налоговое мобильное приложение или подключённую внешнюю систему.'],
+    ['шаг 4 · п. 5 и 8 ст. 115','Проверить итоговый статус','<b>Отчёт сдан только при статусе «Документ принят».</b> Форматно-логический контроль проверяет полноту, формат реквизитов и согласованность показателей. При «Документ не принят» выясняют причину и исправляют ошибку. Перед повторной подачей проверяют, не сформировалась ли автоматическая отчётность за тот же период. Подтверждение приёма сохраняют.']
+   ],'Выберите шаг, чтобы увидеть, что на нём делает бухгалтер, и норму НК РК.'))},
+ s=>{s.append(h('<h3>Способы представления</h3>'),h('<p class="lead">П. 3 ст. 115: отчётность подаётся одним из способов.</p>'),
+   h('<div class="cols"><div class="box b"><h4>На бумажном носителе</h4><p>ФЛК проводится после того, как должностное лицо внесёт отчёт в информационную систему (пп. 2 п. 5).</p></div><div class="box g"><h4>1) Веб-приложение</h4><p>Электронный документ.</p></div><div class="box b"><h4>2) Налоговое мобильное приложение</h4><p>Электронный документ.</p></div><div class="box g"><h4>3) Внешние информационные системы</h4><p>Подключённые к ИС налогового органа по Закону «Об информатизации».</p></div></div>'))},
+ s=>{s.append(h('<h3>Путь декларации</h3>'),h('<p class="lead">Отчёт считается сданным не когда вы его отправили, а когда система его приняла. Нажмите кнопки и посмотрите путь.</p>'));
+   const steps=['Заполнили','Отправили','ФЛК','Статус'];const fl=h('<div class="flow"></div>');steps.forEach((x,i)=>{fl.append(h('<span class="fs">'+x+'</span>'));if(i<3)fl.append(h('<span class="arrow">→</span>'))});
+   const out=h('<div style="min-height:70px"></div>');const btns=h('<div style="display:flex;gap:10px;flex-wrap:wrap"></div>');
+   const run=(ok)=>{const f=[...fl.querySelectorAll('.fs')];f.forEach(x=>x.className='fs');out.innerHTML='';f.forEach((x,i)=>setTimeout(()=>{x.className='fs '+((!ok&&i>=2)?'no':'on')},i*250));
+    setTimeout(()=>{out.innerHTML=ok?'<span class="stamp" style="color:var(--green)">ДОКУМЕНТ ПРИНЯТ</span><p style="margin-top:10px">Отчёт сдан (п. 5 ст. 115).</p>':'<span class="stamp" style="color:var(--bad)">ДОКУМЕНТ НЕ ПРИНЯТ</span><p style="margin-top:10px">Форматно-логический контроль не пройден. Такой отчёт считается <b>непредставленным</b>. Исправьте и отправьте снова до срока.</p>'},1050)};
+   const a=h('<button class="btn" type="button">Отправить без ошибок</button>');a.onclick=()=>run(true);const b=h('<button class="btn ghost" type="button">Отправить с пустым полем</button>');b.onclick=()=>run(false);btns.append(a,b);
+   s.append(fl,btns,out,h('<div class="law blue"><b class="ref">ФЛК — ФОРМАТНО-ЛОГИЧЕСКИЙ КОНТРОЛЬ</b>П. 5 ст. 115: автоматизированный процесс проверки данных налоговой отчётности на соответствие заданным параметрам и логическим правилам её составления, включая выявление ошибок — неправильных форматов, пропущенных значений, сумм или несоответствий.</div>'),
+    h('<p style="font-size:.92rem;color:var(--muted)">Перед повторной подачей проверьте, не сформировалась ли за этот период автоматическая отчётность, и сохраните подтверждение приёма (п. 5 и 8 ст. 115).</p>'))},
+ s=>{s.append(h('<h3>Когда отчётность не принимают (п. 8 ст. 115)</h3>'),h('<p class="lead">П. 1 ст. 115: представление отчётности включает представление, приём налоговым органом, внесение изменений и дополнений, приостановление и возобновление. Налоговый орган не принимает отчётность в пяти случаях.</p>'),
+   h('<div class="tbl"><table class="sm"><thead><tr><th>№</th><th>Основание</th></tr></thead><tbody><tr><td>1</td><td>Не соответствует форме, установленной уполномоченным органом</td></tr><tr><td>2</td><td>Не указаны или неправильно указаны обязательные идентификационные данные налогоплательщика и (или) налогового органа, дата составления, вид отчётности</td></tr><tr><td>3</td><td>Не подписана и (или), когда это установлено законодательством, не заверена печатью</td></tr><tr><td>4</td><td>Декларация по НДС без реестров счетов-фактур — если выписывались бумажные счета-фактуры из-за отсутствия связи</td></tr><tr><td>5</td><td>Декларация по ИПН и соцналогу без исчисленных сумм по каждому физическому лицу</td></tr></tbody></table></div>'))},
+ s=>{s.append(h('<h3>Приостановление и возобновление подачи</h3>'),h('<p class="lead">Если у предприятия нет объектов налогообложения, оно вправе обратиться за приостановлением представления отчётности (п. 1–2 ст. 117).</p>'));
+   const fl=h('<div class="flow"></div>');['Нет объектов налогообложения','Заявление о приостановлении','Сведения опубликованы на сайте уполномоченного органа','Отчётность за период не сдаётся','Деятельность возобновлена → подача возобновляется'].forEach((x,i,a)=>{fl.append(h('<span class="fs on">'+x+'</span>'));if(i<a.length-1)fl.append(h('<span class="arrow">→</span>'))});
+   s.append(fl,h('<div class="cols"><div class="box g"><h4>Основание не сдавать</h4><p>Не само заявление, а <b>публикация сведений</b> о приостановлении на сайте уполномоченного органа.</p></div><div class="box b"><h4>Возобновление</h4><p>Если предприятие возобновляет деятельность, оно <b>обязано</b> возобновить подачу отчётности.</p></div></div>'),
+    h('<div class="law"><b class="ref">П. 3 СТ. 117 — ОТКАЖУТ, ЕСЛИ</b>есть налоговый долг или долг по соцплатежам, компания в реестре бездействующих или есть неисполненные уведомления (подробнее — тема 1).</div>'))},
+ s=>{s.append(h('<h3>Как исправить декларацию после приёма</h3>'),
+   h('<div class="cols"><div class="box g"><h4>Нашли ошибку сами</h4><p>По общему правилу — <b>дополнительная отчётность</b> за тот же период (ст. 116).</p></div><div class="box b"><h4>Пришло уведомление</h4><p>Если исправление нужно для исполнения уведомления налогового органа — <b>отчётность по уведомлению</b> (подп. 4 п. 3 ст. 114).</p></div><div class="box g"><h4>Отзыв запрещён</h4><p>С 2026 года отчётность по общему правилу не отзывается (п. 9 ст. 115). Исключение — заявление о ввозе товаров и уплате косвенных налогов (ст. 532).</p></div></div>'),
+   h('<div class="law blue"><b class="ref">П. 1 СТ. 116 — ЧТО ПИСАТЬ В СТРОКЕ</b>Суммовой показатель: <b>разница</b> между верным и ранее отражённым значением. Несуммовой показатель (например, код или признак): <b>новое значение</b>.</div>'));
+   const f=h('<div class="fields"><label class="f">Было в принятой отчётности, ₸<input id="dA" type="number" value="240000" step="10000"></label><label class="f">Верное значение, ₸<input id="dB" type="number" value="300000" step="10000"></label></div>');const out=h('<div class="reveal"></div>');s.append(f,out);
+   const c=()=>{const a=+f.querySelector('#dA').value||0,b=+f.querySelector('#dB').value||0,d=b-a;out.innerHTML='<div class="formula">В дополнительной: '+nf(b)+' − '+nf(a)+' = <b>'+(d>0?'+':d<0?'−':'')+tg(Math.abs(d))+'</b></div><p style="margin-top:8px;font-size:.95rem">Типичная ошибка: внести всю сумму '+tg(b)+'. Тогда итог по строке станет '+tg(a+b)+' — показатель будет завышен.</p>'};
+   f.querySelectorAll('input').forEach(x=>x.oninput=c);c();
+   s.append(h('<div class="cols"><div class="box g"><h4>Плюс</h4><p>Суммы по дополнительной отчётности уплачиваются без привлечения к ответственности (п. 1 ст. 116). Пеня за дни просрочки при этом начисляется (ст. 85).</p></div><div class="box b"><h4>Нельзя подавать (п. 3 ст. 116)</h4><p>1) за проверяемый период во время проверки; 2) за обжалуемый период во время обжалования; 3) с требованием о возврате НДС; 4) по авансам КПН за II–IV кварталы — не позднее последнего рабочего дня периода; 5) по декларации об активах и обязательствах по закону о выборах.</p></div></div>'))},
+ s=>{s.append(h('<h3>Автоматическая отчётность с нулевыми показателями</h3>'),h('<p class="lead">Пропустили срок первоначальной или очередной формы, указанной в кабинете, — после срока система сама формирует отчётность с нулями (п. 2, 6 и 7 ст. 115). Не касается физических лиц, не являющихся ИП. После этого за тот же период система принимает только дополнительную отчётность (или бумажную в пределах срока — тогда автоматическая аннулируется).</p>'));
+   const fl=h('<div class="flow"></div>');const st=['Срок прошёл','Система сформировала нули','Был объект за период?','Итог'];st.forEach((x,i)=>{fl.append(h('<span class="fs">'+x+'</span>'));if(i<3)fl.append(h('<span class="arrow">→</span>'))});
+   const out=h('<div class="reveal">Выберите ситуацию.</div>');const btns=h('<div style="display:flex;gap:10px;flex-wrap:wrap"></div>');
+   const run=(obj)=>{const f=[...fl.querySelectorAll('.fs')];f.forEach((x,i)=>{x.className='fs';setTimeout(()=>{x.className='fs '+(obj&&i===3?'no':'on')},i*220)});
+    setTimeout(()=>{out.innerHTML=obj?'<b style="color:var(--bad)">Объект был — нужна дополнительная отчётность к автоматически сформированной.</b> Нули не освобождают от налога (п. 7 ст. 115). Отозвать автоматическую нельзя.':'<b style="color:var(--green-2)">Объекта не было</b> — обязанности подать дополнительную отчётность к автоматической не возникает (п. 7 ст. 115 требует её, только если есть объект, который нужно отразить).'},900)};
+   const a=h('<button class="btn" type="button">За период ничего не было</button>');a.onclick=()=>run(false);const b=h('<button class="btn ghost" type="button">Была выручка или зарплата</button>');b.onclick=()=>run(true);btns.append(a,b);
+   s.append(fl,btns,out)},
+ s=>{s.append(h('<h3>После сдачи: камеральный контроль</h3>'),h('<p class="lead">Налоговая сверяет отчёт с данными контрагентов, банков и электронных счетов-фактур без выезда в компанию (ст. 136–137).</p>'));
+   const fl=h('<div class="flow"></div>');['Камеральный контроль','Расхождение','Уведомление о расхождениях','Отчётность по уведомлению или пояснение'].forEach((x,i,a)=>{fl.append(h('<span class="fs on">'+x+'</span>'));if(i<a.length-1)fl.append(h('<span class="arrow">→</span>'))});
+   s.append(fl,h('<div class="law"><b class="ref">ПП. 4 П. 2 СТ. 86 НК РК</b>При неисполнении уведомления о расхождениях, выявленных по результатам камерального контроля, налоговый орган приостанавливает расходные операции по банковским счетам.</div>'))},
+ s=>{s.append(h('<h3>Практический кейс по декларированию</h3>'),h('<p class="lead">4 минуты: каждый записывает на бланке ответ и номер статьи. Затем 2 минуты — разбор по ключу. За каждый пункт: 1 балл за верный результат и 1 балл за верную норму, максимум 6 баллов.</p>'));
+   const cs=[
+    ['1. Проверка приёма','ТОО отправило очередную декларацию в электронном виде. Система присвоила статус «Документ не принят». Считается ли декларация представленной? Какой статус нужно получить?','<b>Нет, не считается.</b> Отчётность представлена только при статусе «Документ принят» (<b>п. 5 ст. 115 НК РК</b>).'],
+    ['2. Действия после истечения срока','Ошибка осталась неисправленной. После срока система сформировала автоматическую отчётность с нулевыми показателями. У ТОО есть объект налогообложения за этот период. Какую отчётность подать?','<b>Дополнительную отчётность к автоматически сформированной</b> за тот же период, потому что есть объект, который нужно отразить (<b>п. 6–7 ст. 115 НК РК</b>).'],
+    ['3. Исправление суммы','В принятой дополнительной отчётности в строке указано 240 000 ₸. Верный итоговый показатель за период — 300 000 ₸. Других корректировок не было, проверка и обжалование не идут. Какую сумму указать при следующем исправлении?','<b>+60 000 ₸</b> = 300 000 − 240 000. Если внести всю сумму 300 000 ₸, итог завысится до 540 000 ₸ (<b>подп. 1 п. 1 ст. 116 НК РК</b>).']];
+   const g=h('<div style="display:grid;gap:12px"></div>');
+   cs.forEach(c=>{const b=h('<div class="check"><div class="q">'+c[0]+'</div><p>'+c[1]+'</p><button type="button" class="btn ghost" style="margin-top:10px">Показать ключ</button><div class="fb" hidden>'+c[2]+'</div></div>');const bt=b.querySelector('button'),fb=b.querySelector('.fb');bt.onclick=()=>{fb.hidden=!fb.hidden;bt.textContent=fb.hidden?'Показать ключ':'Скрыть ключ'};g.append(b)});
+   s.append(g,h('<p style="font-size:.85rem;color:var(--muted)">Официальные источники: Налоговый кодекс РК от 18.07.2025 № 214-VIII, ст. 114–117, ред. от 01.07.2026 (adilet.zan.kz/rus/docs/K2500000214); приказ Министра финансов РК от 12.11.2025 № 695; КГД — настройка автоматической отчётности в КНП ИСНА; Кабинет налогоплательщика ИСНА.</p>'))},
+ ]},
+{id:'t3',n:'03',title:'Формы и сроки сдачи и уплаты',short:'Основные формы на 2026 год, сроки сдачи и уплаты, налоговый календарь предприятия.',arts:'ст. 347, 359, 445, 505–506, 562, 727 НК РК',
+ slides:[
+ s=>{s.append(h('<h3>Основные формы налоговой отчётности в РК на 2026 год</h3>'),h('<p class="lead">Нажмите на строку, чтобы узнать, кто сдаёт форму.</p>'));
+   const rows=[['100.00','КПН','Ежегодно','Юридические лица на общеустановленном режиме: декларация по корпоративному подоходному налогу (ставка 20%).'],['200.00','ИПН и социальный налог','Ежеквартально','Работодатели как налоговые агенты: ИПН с зарплаты работников, соцналог и соцплатежи.'],['300.00','НДС','Ежеквартально','Плательщики НДС: оборот выше порога 10 000 МРП или добровольная регистрация. Ставка 16%.'],['910.00','Упрощённая декларация','Раз в полугодие','ИП и ТОО на специальном налоговом режиме на основе упрощённой декларации (4%).']];
+   const t=h('<div class="tbl"><table><thead><tr><th>Форма</th><th>Налог / отчётность</th><th>Периодичность</th></tr></thead><tbody></tbody></table></div>');const tb=t.querySelector('tbody');const r=h('<div class="reveal">Выберите форму.</div>');
+   rows.forEach(x=>{const tr=h('<tr class="pickrow" tabindex="0"><td class="form">'+x[0]+'</td><td>'+x[1]+'</td><td>'+x[2]+'</td></tr>');const act=()=>{tb.querySelectorAll('tr').forEach(y=>y.classList.remove('on'));tr.classList.add('on');r.innerHTML='<b>'+x[0]+'</b> — '+x[3]};tr.onclick=act;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();act()}};tb.appendChild(tr)});
+   s.append(t,r)},
+ s=>{s.append(h('<h3>Сроки представления ФНО и уплаты налогов (2026)</h3>'),h('<p class="lead" style="font-weight:600;color:var(--blue-2)">Сдача декларации ≠ уплата налога</p>'));
+   const t=h(`<div class="tbl"><table><thead><tr><th></th><th>Сдача</th><th>Уплата</th></tr></thead><tbody>
+   <tr><td><b class="hl">100.00 (КПН)</b></td><td><b>Сдача:</b> до <span class="hl">31 марта</span> следующего года.</td><td><b>Уплата:</b> до <span class="hl">10 апреля</span> следующего года.</td></tr>
+   <tr><td><b class="hl">200.00</b><br>(ИПН и соцналог)</td><td><b>Сдача:</b> до <span class="hl">15-го числа</span> второго месяца после квартала.</td><td><b>Уплата:</b> обычно ежемесячно до <span class="hl">25-го числа</span> следующего месяца.</td></tr>
+   <tr><td><b class="hl">300.00 (НДС)</b></td><td><b>Сдача:</b> до <span class="hl">15-го числа</span> второго месяца после квартала.</td><td><b>Уплата:</b> до <span class="hl">25-го числа</span> второго месяца после квартала.</td></tr>
+   <tr><td><b class="hl">910.00</b><br>(Упрощёнка)</td><td><b>Сдача:</b> до <span class="hl">15-го числа</span> второго месяца после полугодия.</td><td><b>Уплата:</b> до <span class="hl">25-го числа</span> того же месяца.</td></tr></tbody></table></div>`);
+   s.append(t,h('<p style="font-size:.9rem;color:var(--muted)">Важно: сроки представлены как общие правила; при совпадении с выходными применяются правила переноса. Нормы: п. 1 ст. 359, п. 2 ст. 347 (КПН); п. 1 ст. 445, п. 1 ст. 562 (200.00), п. 4 ст. 440 и п. 1 ст. 560 (уплата ИПН и СН); п. 1 ст. 505, пп. 1 ст. 506 (НДС; декларацию 300.00 можно подать не ранее 15 числа месяца, следующего за кварталом); ст. 727, п. 3 ст. 722 (910.00, период — полугодие); перенос срока с нерабочего дня — ст. 64.</p>'))},
+ s=>{s.append(h('<h3>«Налоговый календарь предприятия — 2026»</h3>'),
+   h('<div class="datecards"><div class="datecard"><div class="d">16 ноября</div><p>сдача ФНО 200.00 и 300.00 за III квартал</p></div><div class="datecard g"><div class="d">25 ноября</div><p>уплата НДС за III квартал</p></div></div>'),
+   h('<div class="monthly"><b>«Ежемесячные платежи с зарплаты — до 25-го числа следующего месяца»</b><ul><li>ИПН</li><li>Социальный налог</li><li>ОПВ</li><li>СО</li><li>ООСМС</li><li>ВОСМС</li></ul></div>'),
+   h('<div class="law blue"><b class="ref">ПОЧЕМУ 16, А НЕ 15</b>15 ноября 2026 года — воскресенье. Если последний день срока приходится на нерабочий день, срок переносится на ближайший следующий рабочий день (ст. 64) — понедельник 16 ноября.</div>'))},
+ s=>{s.append(h('<h3>Как вычислить срок самому</h3>'),h('<p class="lead">Выберите форму и квартал — получите срок с объяснением.</p>'));
+   const f=h('<div class="fields"><label class="f">Форма<select id="sF"><option value="300">300.00 · НДС</option><option value="200">200.00 · ИПН и СН</option></select></label><label class="f">Квартал 2026<select id="sQ"><option value="1">1 квартал</option><option value="2">2 квартал</option><option value="3" selected>3 квартал</option><option value="4">4 квартал</option></select></label></div>');
+   const out=h('<div class="reveal"></div>');s.append(f,out);
+   const MN=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],WD=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+   const sh=d=>{let x=new Date(d),m='';if(x.getDay()===0||x.getDay()===6){m=' ('+x.getDate()+' '+MN[x.getMonth()]+' — '+WD[x.getDay()]+', перенос)';while(x.getDay()===0||x.getDay()===6)x.setDate(x.getDate()+1)}return [x,m]};
+   const calc=()=>{const q=+f.querySelector('#sQ').value,fm=f.querySelector('#sF').value;const m2=new Date(2026,q*3+1,1);const [sd,sm]=sh(new Date(m2.getFullYear(),m2.getMonth(),15));
+    let txt='Второй месяц после '+q+' квартала — <b>'+['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'][m2.getMonth()]+' '+m2.getFullYear()+'</b>.<br>Сдать до: <b>'+sd.getDate()+' '+MN[sd.getMonth()]+' '+sd.getFullYear()+'</b>'+sm+'.';
+    if(fm==='300'){const [pd,pm]=sh(new Date(m2.getFullYear(),m2.getMonth(),25));txt+='<br>Уплатить НДС до: <b>'+pd.getDate()+' '+MN[pd.getMonth()]+' '+pd.getFullYear()+'</b>'+pm+'.'}else txt+='<br>ИПН и СН платятся каждый месяц до 25-го числа следующего месяца.';
+    out.innerHTML=txt};
+   f.querySelectorAll('select').forEach(x=>x.onchange=calc);calc()},
+ ]},
+{id:'t4',n:'04',title:'Ответственность за нарушения',short:'Виды ответственности, штрафы за занижение и несдачу, пеня, принудительное взыскание, исковая давность.',arts:'ст. 272, 278 КоАП · ст. 65, 85, 86 НК РК',
+ slides:[
+ s=>{s.append(h('<h3>Виды ответственности</h3>'),h('<p class="lead">За нарушение налогового законодательства Республики Казахстан предусмотрены следующие последствия.</p>'),
+   h(`<div class="tbl"><table><thead><tr><th>Вид</th><th>Последствия</th></tr></thead><tbody>
+   <tr><td><b>Административная ответственность</b></td><td>Предупреждения и штрафы за нарушения налоговых требований</td></tr>
+   <tr><td><b>Уголовная ответственность</b></td><td>Наказание за уклонение от уплаты налогов при наличии состава преступления</td></tr>
+   <tr><td><b>Пеня</b></td><td>Начисляется за просрочку уплаты налогов</td></tr>
+   <tr><td><b>Принудительное взыскание</b></td><td>Взыскание задолженности, возможное ограничение операций по счетам</td></tr></tbody></table></div>`),
+   h('<div class="law"><b class="ref">ОСНОВНЫЕ НАРУШЕНИЯ</b>Несвоевременная сдача декларации, неуплата налогов, занижение налоговых обязательств, сокрытие объектов налогообложения.</div>'))},
+ s=>{s.append(h('<h3>Нарушение → последствие</h3>'),
+   h(`<div class="tbl"><table><thead><tr><th>Нарушение</th><th>Последствие</th><th>Норма</th></tr></thead><tbody>
+   <tr><td>Не сдали отчёт в срок</td><td>1-й раз — предупреждение, повторно — штраф 30 / 45 / 70 МРП</td><td>ст. 272 КоАП</td></tr>
+   <tr><td>Не заплатили в срок</td><td>Пеня за каждый день просрочки</td><td>пп. 2 ст. 5, ст. 85 НК</td></tr>
+   <tr><td>Занизили налог, а налоговая нашла</td><td>Доначисленный налог + пеня + штраф 20 / 50 / 80% от доначисленной суммы</td><td>ст. 278 КоАП</td></tr>
+   <tr><td>Нашли ошибку сами</td><td>Доплата + пеня, без штрафа</td><td>ст. 116 НК</td></tr></tbody></table></div>`),
+   h('<div class="law"><b class="ref">ГЛАВНОЕ</b>Опоздание со сдачей наказывается, даже если сам налог уплачен вовремя.</div>'))},
+ s=>{s.append(h('<h3>Непредставление отчётности: ст. 272 КоАП</h3>'),h('<p class="lead">При первом нарушении — предупреждение; при повторном нарушении в течение установленного законом периода — штраф.</p>'),
+   h(`<div class="tbl"><table><thead><tr><th>Категория бизнеса</th><th>Штраф</th><th style="text-align:right">В тенге (МРП 4 325 ₸)</th></tr></thead><tbody>
+   <tr><td>Малый бизнес</td><td>30 МРП</td><td class="n-right">129 750 ₸</td></tr>
+   <tr><td>Средний бизнес</td><td>45 МРП</td><td class="n-right">194 625 ₸</td></tr>
+   <tr><td>Крупный бизнес</td><td>70 МРП</td><td class="n-right">302 750 ₸</td></tr></tbody></table></div>`));
+   const f=h('<div class="fields"><label class="f">Категория<select id="c1"><option value="30" selected>Малый бизнес</option><option value="45">Средний бизнес</option><option value="70">Крупный бизнес</option></select></label><label class="f">Нарушение<select id="c2"><option value="1">Первое</option><option value="2">Повторное</option></select></label></div>');
+   const out=h('<div class="reveal"></div>');s.append(f,out);
+   const c=()=>{const m=+f.querySelector('#c1').value;out.innerHTML=f.querySelector('#c2').value==='1'?'<b>Предупреждение.</b> За первое нарушение штраф не назначается.':'<b>Штраф '+m+' МРП = '+tg(m*MRP)+'</b> (повторное нарушение).'};
+   f.querySelectorAll('select').forEach(x=>x.onchange=c);c()},
+ s=>{s.append(h('<h3>Занижение суммы налога: ст. 278 КоАП</h3>'),h('<p class="lead">Штраф считается в процентах от доначисленной суммы налога (при наличии предусмотренного статьёй состава нарушения).</p>'),
+   h(`<div class="tbl"><table><thead><tr><th>Категория бизнеса</th><th>Штраф от доначисленной суммы</th></tr></thead><tbody>
+   <tr><td>Малый бизнес</td><td><b>20%</b></td></tr><tr><td>Средний бизнес</td><td><b>50%</b></td></tr><tr><td>Крупный бизнес</td><td><b>80%</b></td></tr></tbody></table></div>`));
+   const f=h('<div class="fields"><label class="f">Категория<select id="u1"><option value="20" selected>Малый бизнес — 20%</option><option value="50">Средний бизнес — 50%</option><option value="80">Крупный бизнес — 80%</option></select></label><label class="f">Сумма занижения, ₸<input id="u2" type="number" value="1000000" min="0" step="10000"></label></div>');
+   const out=h('<div class="reveal"></div>');s.append(f,out);
+   const c=()=>{const p=+f.querySelector('#u1').value,S=+f.querySelector('#u2').value||0;out.innerHTML='<div class="formula">Штраф: '+nf(S)+' × '+p+'% = <b>'+tg(S*p/100)+'</b></div><p style="margin-top:8px">Дополнительно уплачиваются доначисленный налог '+tg(S)+' и пеня при наличии просрочки. Всего без пени: <b>'+tg(S+S*p/100)+'</b>.</p>'};
+   f.querySelector('select').onchange=c;f.querySelector('input').oninput=c;c();
+   s.append(h('<div class="law blue"><b class="ref">ПРИМЕР</b>Малое предприятие занизило налог на 1 000 000 ₸ → штраф 200 000 ₸ (20%). Если ошибку исправить самим через дополнительную отчётность до проверки, штрафа нет (ст. 116 НК).</div>'))},
+ s=>{s.append(h('<h3>Просрочка уплаты: пеня (пп. 2 ст. 5, ст. 85 НК)</h3>'),h('<div class="law"><b class="ref">ПП. 2 СТ. 5 НК РК</b>Пени — суммы в размере, кратном базовой ставке Национального Банка, действовавшей на каждый день просрочки. Начисляются на неуплаченную в срок сумму налога со дня, следующего за сроком уплаты, включая день уплаты. Кратность: <b>1,25</b> — для налогоплательщиков, 0,65 — для участников горизонтального мониторинга. Ст. 85: пени начисляются независимо от других мер ответственности.</div>'),h('<div class="formula">Пеня = сумма × <b>1,25 × базовая ставка НБ РК</b> ÷ 365 × дни просрочки</div>'));
+   const f=h('<div class="fields"><label class="f">Сумма налога, ₸<input id="p1" type="number" value="1920000" min="0" step="10000"></label><label class="f">Дней просрочки<input id="p2" type="number" value="10" min="0"></label><label class="f">Базовая ставка, %<input id="p3" type="number" value="16.25" step="0.25" min="0"></label></div>');
+   const out=h('<div class="reveal"></div>');s.append(f,out);
+   const c=()=>{const S=+f.querySelector('#p1').value||0,D=+f.querySelector('#p2').value||0,R=+f.querySelector('#p3').value||0;const y=R*1.25,day=S*y/100/365;
+    out.innerHTML='<div class="formula">'+nf(S)+' × '+y.toFixed(4).replace('.',',')+'% ÷ 365 = '+day.toFixed(2).replace('.',',')+' ₸ в день × '+D+' дн. = <b>'+tg(day*D)+'</b></div><p style="margin-top:8px;font-size:.92rem">Дни считают со следующего дня после срока уплаты по день уплаты включительно.</p>'};
+   f.querySelectorAll('input').forEach(x=>x.oninput=c);c()},
+ s=>{s.append(h('<h3>Принудительное взыскание и давность</h3>'),
+   h('<div class="cols"><div class="box g"><h4>Принудительное взыскание</h4><p>Расходные операции по счетам приостанавливают, в частности, при непогашенной налоговой задолженности сверх предельного размера и при неисполнении уведомления о расхождениях по камеральному контролю (п. 2 ст. 86 НК).</p></div><div class="box b"><h4>Уголовная ответственность</h4><p>Наступает за уклонение от уплаты налогов при наличии состава преступления.</p></div><div class="box g"><h4>Исковая давность (ст. 65 НК)</h4><p>3 года после окончания налогового периода; 5 лет — для крупного бизнеса, недропользователей и некоторых других категорий (п. 2 ст. 65 НК); срок течёт после окончания налогового периода (п. 3 ст. 65).</p></div></div>'),
+   h('<div class="law"><b class="ref">ВЫВОД</b>Налоговые нарушения увеличивают расходы предприятия и могут привести к принудительному взысканию задолженности.</div>'),
+   h('<p style="font-size:.85rem;color:var(--muted)">Нормативные источники: КоАП РК, статьи 272 и 278 (adilet.zan.kz/rus/docs/K1400000235); Налоговый кодекс РК от 18.07.2025 № 214-VIII (adilet.zan.kz/rus/docs/K2500000214).</p>'))},
+ ]},
+{id:'t5',n:'05',title:'Комплексный расчёт налогов предприятия',short:'Ставки 2026, налоги с зарплаты, НДС, КПН и свод «что, куда и когда» на примере ТОО.',arts:'ст. 357, 363, 503, 555–558 НК РК',
+ slides:[
+ s=>{s.append(h('<h3>Что такое комплексный расчёт</h3>'),h('<p class="lead">Комплексный расчёт — это единая картина всех налогов и платежей, которые ТОО на общеустановленном режиме платит по трём «потокам».</p>'),
+   h('<div class="cols"><div class="box b"><h4>1. С зарплаты работников</h4><p>ИПН, ОПВ, ВОСМС — удерживаются; ОПВР, СО, ООСМС, СН — за счёт работодателя.</p></div><div class="box g"><h4>2. С оборота</h4><p>НДС 16%: в бюджет уходит разница между НДС с продаж и НДС с покупок.</p></div><div class="box b"><h4>3. С прибыли</h4><p>КПН 20% с налогооблагаемого дохода: доход минус вычеты.</p></div></div>'),
+   h('<div class="law"><b class="ref">РАСЧЁТНЫЕ ПОКАЗАТЕЛИ 2026</b>МРП = 4 325 ₸ · МЗП = 85 000 ₸ (Закон о республиканском бюджете на 2026–2028 годы № 239-VIII).</div>'))},
+ s=>{s.append(h('<h3>Ставки 2026 и что означает каждый показатель</h3>'),
+   h(`<div class="tbl"><table class="sm"><thead><tr><th>Показатель</th><th>Ставка 2026</th><th>С чего считается</th><th>Кто платит</th><th>Что это значит</th></tr></thead><tbody>
+   <tr><td><b>ИПН</b> (ст. 363)</td><td>10% — до 8 500 МРП в год (36 762 500 ₸); 15% — с превышения</td><td>Доход минус ОПВ и взносы на ОСМС (ст. 402) и базовый вычет 30 МРП = 129 750 ₸ (ст. 403)</td><td>Работник; удерживает работодатель</td><td>Налог на личный доход. С первых 129 750 ₸ налог не берётся.</td></tr>
+   <tr><td><b>ОПВ</b></td><td>10%</td><td>Доход, не более 50 МЗП</td><td>Работник</td><td>Пенсионные накопления работника в ЕНПФ.</td></tr>
+   <tr><td><b>ВОСМС</b></td><td>2%</td><td>Доход (в пределах предельной базы)</td><td>Работник</td><td>Взнос работника на медстрахование.</td></tr>
+   <tr><td><b>ОПВР</b></td><td>3,5% (4,5% в 2027, 5% в 2028)</td><td>Доход работника</td><td>Работодатель</td><td>Пенсионный взнос за счёт работодателя; за работников 1975 г. р. и моложе.</td></tr>
+   <tr><td><b>СО</b></td><td>5%</td><td>Доход минус ОПВ; от 1 до 7 МЗП</td><td>Работодатель</td><td>Фонд выплат при потере дохода: декрет, потеря работы, потеря кормильца.</td></tr>
+   <tr><td><b>ООСМС</b></td><td>3%</td><td>Доход (в пределах предельной базы)</td><td>Работодатель</td><td>Медстрахование работника за счёт работодателя.</td></tr>
+   <tr><td><b>СН</b> (ст. 556–558)</td><td>6% (п. 1 ст. 557)</td><td>Расходы работодателя по доходам работника минус ОПВ и взносы на ОСМС (п. 2 ст. 556); не менее 14 МРП (п. 3 ст. 556)</td><td>Работодатель</td><td>Налог в бюджет с фонда оплаты труда. С 2026 года СО не уменьшает СН.</td></tr>
+   <tr><td><b>НДС</b> (ст. 503)</td><td>16% (п. 1 ст. 503); 5% — лекарства, медизделия и медуслуги в 2026 году, с 2027 — 10% (п. 2 ст. 503)</td><td>Оборот; к уплате — НДС с продаж минус НДС с покупок</td><td>ТОО на учёте по НДС</td><td>ТОО передаёт в бюджет то, что заплатил покупатель. Порог учёта — 10 000 МРП (≈ 43,25 млн ₸ в год).</td></tr>
+   <tr><td><b>КПН</b> (п. 2 ст. 357)</td><td>20% (25% — банки, игорный бизнес)</td><td>Доход минус вычеты и корректировки</td><td>ТОО</td><td>Налог на прибыль, а не на выручку.</td></tr></tbody></table></div>`),
+   h('<div class="law blue"><b class="ref">ВЫВОД</b>Налоги бывают трёх видов: удерживаемые с работника (ИПН, ОПВ, ВОСМС), за счёт работодателя (ОПВР, СО, ООСМС, СН) и налоги самого предприятия (НДС, КПН). У каждого своя база, поэтому нельзя применять одну ставку ко всей зарплате или ко всему доходу.</div>'))},
+ s=>{s.append(h('<h3>Зарплата 500 000 ₸: что удерживается с работника</h3>'),h('<p class="lead">Условный пример: резидент РК, родился после 1975 года, базовый вычет применяется.</p>'),
+   h(`<div class="tbl"><table class="sm"><thead><tr><th>№</th><th>Показатель</th><th>Расчёт</th><th style="text-align:right">Сумма, ₸</th><th>Пояснение</th></tr></thead><tbody>
+   <tr><td>1</td><td>ОПВ 10%</td><td class="mono">500 000 × 10%</td><td class="n-right">50 000</td><td>На пенсионный счёт работника</td></tr>
+   <tr><td>2</td><td>ВОСМС 2%</td><td class="mono">500 000 × 2%</td><td class="n-right">10 000</td><td>Медстрахование за счёт работника</td></tr>
+   <tr><td>3</td><td>База для ИПН</td><td class="mono">500 000 − 50 000 − 10 000 − 129 750</td><td class="n-right">310 250</td><td>Доход после ОПВ, ВОСМС и вычета 30 МРП</td></tr>
+   <tr><td>4</td><td>ИПН 10%</td><td class="mono">310 250 × 10%</td><td class="n-right">31 025</td><td>Годовой доход ниже 8 500 МРП → 10%</td></tr>
+   <tr style="background:var(--green-soft);font-weight:600"><td>5</td><td>На руки</td><td class="mono">500 000 − 50 000 − 10 000 − 31 025</td><td class="n-right">408 975</td><td>Всего удержано 91 025 ₸</td></tr></tbody></table></div>`))},
+ s=>{s.append(h('<h3>Зарплата 500 000 ₸: что платит работодатель сверху</h3>'),
+   h(`<div class="tbl"><table class="sm"><thead><tr><th>№</th><th>Показатель</th><th>Расчёт</th><th style="text-align:right">Сумма, ₸</th><th>Пояснение</th></tr></thead><tbody>
+   <tr><td>6</td><td>ОПВР 3,5%</td><td class="mono">500 000 × 3,5%</td><td class="n-right">17 500</td><td>Дополнительный пенсионный взнос</td></tr>
+   <tr><td>7</td><td>СО 5%</td><td class="mono">(500 000 − 50 000) × 5%</td><td class="n-right">22 500</td><td>База уменьшена на ОПВ</td></tr>
+   <tr><td>8</td><td>ООСМС 3%</td><td class="mono">500 000 × 3%</td><td class="n-right">15 000</td><td>Медстрахование за счёт работодателя</td></tr>
+   <tr><td>9</td><td>Социальный налог 6%</td><td class="mono">(500 000 − 50 000 − 10 000) × 6%</td><td class="n-right">26 400</td><td>База уменьшена на ОПВ и ВОСМС; СО не вычитается</td></tr>
+   <tr style="font-weight:600"><td></td><td>Итого сверх оклада</td><td class="mono">17 500 + 22 500 + 15 000 + 26 400</td><td class="n-right">81 400</td><td>Дополнительные расходы работодателя</td></tr>
+   <tr style="background:var(--blue-soft);font-weight:600"><td></td><td>Полная стоимость работника</td><td class="mono">500 000 + 81 400</td><td class="n-right">581 400</td><td>Реальные затраты ТОО</td></tr></tbody></table></div>`),
+   h('<div class="law"><b class="ref">ВЫВОД</b>Общая нагрузка на зарплату 500 000 ₸ — 172 425 ₸ (91 025 удержано с работника + 81 400 за счёт работодателя), около 34,5% от оклада. Работник получает 408 975 ₸, а ТОО тратит 581 400 ₸.</div>'))},
+ s=>{s.append(h('<h3>Посчитайте любую зарплату</h3>'));
+   const f=h('<div class="fields"><label class="f">Оклад, ₸<input id="z1" type="number" value="500000" min="0" step="5000"></label><label class="f">Год рождения<input id="z2" type="number" value="1990" min="1940" max="2010"></label></div>');
+   const out=h('<div class="tbl"></div>');s.append(f,out);
+   const c=()=>{const g=+f.querySelector('#z1').value||0,b=+f.querySelector('#z2').value||0;const opv=Math.min(g,50*MZP)*.1,vos=Math.min(g,20*MZP)*.02,ipn=Math.max(0,g-opv-vos-VY)*.1,so=Math.min(Math.max(g-opv,MZP),7*MZP)*.05,sn=Math.max(g-opv-vos,14*MRP)*.06,oo=Math.min(g,40*MZP)*.03,opvr=b>=1975?Math.min(g,50*MZP)*.035:0;
+    const emp=opvr+so+oo+sn, held=opv+vos+ipn;
+    const r=[['ОПВ 10%','работник',opv],['ВОСМС 2%','работник',vos],['ИПН 10%','работник',ipn],['На руки','',g-held,'g'],['ОПВР 3,5%'+(b<1975?' (не платится: до 1975 г. р.)':''),'работодатель',opvr],['СО 5%','работодатель',so],['ООСМС 3%','работодатель',oo],['СН 6%','работодатель',sn],['Итого сверх оклада','работодатель',emp,'s'],['Полная стоимость работника','',g+emp,'b']];
+    out.innerHTML='<table><thead><tr><th>Платёж</th><th>Кто платит</th><th style="text-align:right">Сумма</th></tr></thead><tbody>'+r.map(x=>'<tr'+(x[3]==='g'?' style="background:var(--green-soft);font-weight:600"':x[3]==='b'?' style="background:var(--blue-soft);font-weight:600"':x[3]==='s'?' style="font-weight:600"':'')+'><td>'+x[0]+'</td><td>'+x[1]+'</td><td class="n-right">'+tg(x[2])+'</td></tr>').join('')+'</tbody></table><p style="padding:10px 16px;margin:0;color:var(--muted);font-size:.92rem">Общая нагрузка: '+tg(held+emp)+(g?' — '+((held+emp)/g*100).toFixed(1).replace('.',',')+'% от оклада':'')+'</p>'};
+   f.querySelectorAll('input').forEach(x=>x.oninput=c);c()},
+ s=>{s.append(h('<h3>НДС за квартал и КПН за год</h3>'),
+   h(`<div class="tbl"><table class="sm"><thead><tr><th>Показатель</th><th>Расчёт</th><th style="text-align:right">Сумма, ₸</th><th>Пояснение</th></tr></thead><tbody>
+   <tr><td>НДС с продаж</td><td class="mono">30 000 000 × 16%</td><td class="n-right">4 800 000</td><td>Реализация за квартал без НДС</td></tr>
+   <tr><td>НДС с покупок (зачёт)</td><td class="mono">18 000 000 × 16%</td><td class="n-right">2 880 000</td><td>НДС, уплаченный поставщикам</td></tr>
+   <tr style="background:var(--green-soft);font-weight:600"><td>НДС к уплате</td><td class="mono">4 800 000 − 2 880 000</td><td class="n-right">1 920 000</td><td>В бюджет — только добавленная стоимость</td></tr>
+   <tr><td>Доход за год</td><td>—</td><td class="n-right">120 000 000</td><td>Выручка без НДС и прочие доходы</td></tr>
+   <tr><td>Вычеты за год</td><td>—</td><td class="n-right">95 000 000</td><td>Себестоимость, ФОТ с налогами, аренда и др.</td></tr>
+   <tr><td>Налогооблагаемый доход</td><td class="mono">120 000 000 − 95 000 000</td><td class="n-right">25 000 000</td><td>База для КПН</td></tr>
+   <tr style="background:var(--blue-soft);font-weight:600"><td>КПН 20%</td><td class="mono">25 000 000 × 20%</td><td class="n-right">5 000 000</td><td>За год; в течение года — авансовые платежи</td></tr></tbody></table></div>`));
+   const f=h('<div class="fields"><label class="f">Продажи без НДС, ₸<input id="n1" type="number" value="30000000" step="100000" min="0"></label><label class="f">Покупки без НДС, ₸<input id="n2" type="number" value="18000000" step="100000" min="0"></label><label class="f">Доход за год, ₸<input id="k1" type="number" value="120000000" step="1000000" min="0"></label><label class="f">Вычеты, ₸<input id="k2" type="number" value="95000000" step="1000000" min="0"></label></div>');
+   const out=h('<div style="display:grid;gap:8px"></div>');s.append(h('<p class="label" style="margin-top:4px">Поменяйте цифры</p>'),f,out);
+   const c=()=>{const a=+f.querySelector('#n1').value||0,b=+f.querySelector('#n2').value||0,k1=+f.querySelector('#k1').value||0,k2=+f.querySelector('#k2').value||0;
+    out.innerHTML='<div class="formula">НДС: '+nf(a)+' × 16% − '+nf(b)+' × 16% = '+nf(a*.16)+' − '+nf(b*.16)+' = <b>'+tg(a*.16-b*.16)+'</b></div><div class="formula">КПН: ('+nf(k1)+' − '+nf(k2)+') × 20% = <b>'+tg(Math.max(0,k1-k2)*.2)+'</b></div>'};
+   f.querySelectorAll('input').forEach(x=>x.oninput=c);c()},
+ s=>{s.append(h('<h3>Свод: что платим, куда и когда</h3>'),
+   h(`<div class="tbl"><table class="sm"><thead><tr><th>Платёж</th><th>Куда уплачивается</th><th>Отчётность</th><th>Срок уплаты</th></tr></thead><tbody>
+   <tr><td><b>ИПН, социальный налог</b></td><td>Бюджет (органы КГД)</td><td>ФНО 200.00 — ежеквартально, до 15 числа второго месяца после квартала</td><td>До 25 числа месяца, следующего за месяцем выплаты дохода</td></tr>
+   <tr><td><b>ОПВ, ОПВР</b></td><td>ЕНПФ (через Государственную корпорацию)</td><td>Данные отражаются в ФНО 200.00</td><td>До 25 числа следующего месяца</td></tr>
+   <tr><td><b>СО</b></td><td>Государственный фонд социального страхования</td><td>Данные отражаются в ФНО 200.00</td><td>До 25 числа следующего месяца</td></tr>
+   <tr><td><b>ВОСМС, ООСМС</b></td><td>Фонд социального медицинского страхования</td><td>Данные отражаются в ФНО 200.00</td><td>До 25 числа следующего месяца</td></tr>
+   <tr><td><b>НДС</b></td><td>Бюджет (органы КГД)</td><td>ФНО 300.00 — ежеквартально, до 15 числа второго месяца после квартала</td><td>До 25 числа второго месяца после квартала (25 февраля, 25 мая, 25 августа, 25 ноября)</td></tr>
+   <tr><td><b>КПН</b></td><td>Бюджет (органы КГД)</td><td>ФНО 100.00 — раз в год, до 31 марта</td><td>Авансовые платежи — ежемесячно до 25 числа; доплата по декларации — до 10 апреля</td></tr></tbody></table></div>`),
+   h('<div class="law"><b class="ref">ВЫВОД</b>Предприятие работает по календарю: ежемесячно до 25 числа — платежи с зарплаты и авансы по КПН; ежеквартально — ФНО 200.00 и 300.00 с уплатой НДС; раз в год — декларация по КПН. Просрочка влечёт пеню, а нарушения — штрафы (тема 4).</div>'),
+   h('<p style="font-size:.85rem;color:var(--muted)">Нормативные источники: Налоговый кодекс РК от 18.07.2025 № 214-VIII (adilet.zan.kz/rus/docs/K2500000214), ст. 99 (порог НДС), 349–350 (авансы КПН), 357, 363, 402–403, 440 (уплата ИПН), 503, 556–558, 560 (уплата СН); Закон о республиканском бюджете на 2026–2028 годы № 239-VIII; Социальный кодекс РК и Закон об ОСМС.</p>'))}
+ ]}
+];
+
+/* ============ STUDENTS & VARIANTS ============ */
+const NAMES=[[2,'Айдарханұлы Азамат'],[3,'Бакткалиев Дамир Даниярович'],[4,'Болатхан Алдияр Жұмағалиұлы'],[5,'Дериглазов Павел Александрович'],[6,'Исаев Бек Габитулы'],[8,'Келдібек Мейіржан Рахимжанұлы'],[9,'Қалмен Данияр Алимжанұлы'],[11,'Нұрғайып Алихан Ерболатұлы'],[12,'Өтеулі Абылай Берікұлы'],[13,'Пак Айяна Дмитриевна'],[16,'Абдукадирова Сәуле Амангельдіқызы'],[17,'Азизбеков Максат Арманович'],[18,'Айдаров Аймар Дуанбекович'],[19,'Байдукова Арина Андреевна'],[20,'Бозтай Амина'],[21,'Жақсылық Нұрислам Қуантқанұлы'],[22,'Зейніл Гүлнара Талғатқызы'],[23,'Икласбеков Нуртас Курмангазыулы'],[24,'Йылмаз Мухаммедали'],[25,'Кабак Дмитрий Алексеевич'],[27,'Кариева Карина Армановна'],[28,'Кривенко Ника Витальевна'],[29,'Қабдолда Камилла Болатқызы'],[30,'Макашева Сати Мухитовна'],[31,'Макульбекова Жасмин'],[32,'Нурадилов Ерасыл Айдосұлы'],[33,'Рынковский Давид Михайлович'],[34,'Сәтпек Нұрлыбек Асланбекұлы'],[36,'Тохтабаева Хадижа Батырхановна'],[37,'Төлегенқызы Айгерім'],[38,'Турлибеков Ермурат Максатович'],[39,'Тян Кирилл Михайлович'],[40,'Урусова Виктория Денисовна'],[41,'Утегенова Гулнура Данияровна'],[42,'Хашимова Саида Ренатовна'],[43,'Шандыбина София Сергеевна']]
+ .map((x,i)=>({no:x[0],name:x[1],v:(i%4)+1}));
+
+/* question: [type, text, options|answer, correct, points] ; type c=choice, n=number(tolerance) */
+const VARIANTS={
+1:[
+ ['c','Бухгалтер нашёл ошибку в уже принятой декларации. Какую отчётность нужно подать?',['Отзыв декларации','Дополнительную','Ликвидационную','Первоначальную'],1,2],
+ ['c','Когда налоговая отчётность считается представленной?',['После отправки файла','После уплаты налога','После присвоения статуса «Документ принят»','После камерального контроля'],2,2],
+ ['c','До какого числа нужно сдать декларацию 300.00 за III квартал 2026 года?',['15 октября 2026','16 ноября 2026','25 ноября 2026','31 декабря 2026'],1,2],
+ ['c','До какого числа уплачивается КПН по декларации 100.00?',['31 марта следующего года','10 апреля следующего года','25 числа каждого месяца','15 февраля следующего года'],1,2],
+ ['c','ТОО (малый бизнес) впервые в году опоздало со сдачей декларации. Какая санкция по ст. 272 КоАП?',['Штраф 30 МРП','Предупреждение','Пеня','Приостановление операций по счетам'],1,2],
+ ['c','Какая ставка НДС действует в 2026 году?',['12%','14%','16%','20%'],2,2],
+ ['n','Зарплата работника 250 000 ₸ (базовый вычет 30 МРП). Посчитайте ИПН за месяц, ₸.',9025,1,4],
+ ['n','Налог 800 000 ₸ уплачен на 6 дней позже срока. Базовая ставка НБ РК 16,25%. Посчитайте пеню, ₸.',2671,2,4]
+],
+2:[
+ ['c','ТОО ликвидируется. Какой вид отчётности оно подаёт?',['Очередную','Дополнительную','Ликвидационную','По уведомлению'],2,2],
+ ['c','Можно ли отозвать сданную налоговую отчётность?',['Да, в течение 10 дней','Да, по заявлению','Нет, отзыв не допускается (п. 9 ст. 115)','Только электронную'],2,2],
+ ['c','Как часто сдаётся декларация 200.00 по ИПН и социальному налогу?',['Ежемесячно','Ежеквартально','Раз в полугодие','Ежегодно'],1,2],
+ ['c','До какого числа нужно заплатить налоги с зарплаты за октябрь 2026?',['16 ноября','25 ноября','31 октября','15 февраля'],1,2],
+ ['c','ТОО (малый бизнес) повторно за год опоздало с декларацией. Какой штраф?',['15 МРП = 64 875 ₸','30 МРП = 129 750 ₸','45 МРП = 194 625 ₸','70 МРП = 302 750 ₸'],1,2],
+ ['c','Как в 2026 году считается социальный налог?',['6%, уменьшается на СО','6%, на СО не уменьшается','9,5%','11%'],1,2],
+ ['n','Зарплата работника 300 000 ₸. Посчитайте социальный налог за месяц, ₸.',15840,1,4],
+ ['n','Продажи за квартал 20 000 000 ₸ без НДС, покупки 11 600 000 ₸ с НДС. Посчитайте НДС к уплате, ₸.',1600000,1,4]
+],
+3:[
+ ['c','ИП зарегистрировался в марте 2026 и впервые сдаёт декларацию. Какой это вид отчётности?',['Первоначальная','Очередная','Дополнительная','Ликвидационная'],0,2],
+ ['c','Что происходит, если отчётность не сдана к сроку?',['Ничего','Система формирует отчётность с нулевыми показателями','Налог считается уплаченным','Налоговая сама подаёт реальные цифры'],1,2],
+ ['c','Как часто сдаётся упрощённая декларация 910.00?',['Ежемесячно','Ежеквартально','Раз в полугодие','Ежегодно'],2,2],
+ ['c','До какого числа уплачивается НДС по декларации 300.00?',['До 15 числа второго месяца после квартала','До 25 числа второго месяца после квартала','До 31 марта','До 10 апреля'],1,2],
+ ['c','За что начисляется пеня?',['За опоздание со сдачей отчёта','За каждый день просрочки уплаты налога','За ошибку в ИИН','За подачу дополнительной отчётности'],1,2],
+ ['c','Какая общая ставка КПН в 2026 году?',['10%','15%','20%','25%'],2,2],
+ ['n','Зарплата работника 350 000 ₸ (базовый вычет 30 МРП). Посчитайте ИПН за месяц, ₸.',17825,1,4],
+ ['n','Совокупный годовой доход ТОО 90 000 000 ₸, вычеты 72 000 000 ₸. Посчитайте КПН, ₸.',3600000,1,4]
+],
+4:[
+ ['c','Налоговая прислала уведомление о расхождениях. Какой вид отчётности подаётся?',['Первоначальная','Очередная','По уведомлению','Ликвидационная'],2,2],
+ ['c','Как называется автоматическая проверка отчёта при сдаче?',['Камеральный контроль','Форматно-логический контроль','Налоговая проверка','Аудит'],1,2],
+ ['c','До какого числа сдаётся декларация 100.00 по КПН?',['31 марта следующего года','10 апреля следующего года','15 февраля следующего года','31 декабря'],0,2],
+ ['c','Какого числа в 2026 году сдаются 200.00 и 300.00 за III квартал?',['15 ноября','16 ноября','25 ноября','15 октября'],1,2],
+ ['c','Какой общий срок исковой давности по налогам?',['1 год','3 года','5 лет','10 лет'],1,2],
+ ['c','Платится ли ОПВР за работника 1972 года рождения?',['Да, 3,5%','Да, 5%','Нет, только за родившихся с 1975 года','Только по заявлению'],2,2],
+ ['n','Зарплата работника 400 000 ₸. Посчитайте социальный налог за месяц, ₸.',21120,1,4],
+ ['n','Налог 500 000 ₸ уплачен на 4 дня позже срока. Базовая ставка НБ РК 16,25%. Посчитайте пеню, ₸.',1113,2,4]
+]};
+const MAXPTS=20;
+
+/* ============ results / code ============ */
+const K_RES='k8_results_v1', K_RUN='k8_run_v1';
+function results(){return store.get(K_RES,[])}
+function sig(s){let h1=0x811c9dc5;for(const ch of s+'|k8-2026'){h1^=ch.codePointAt(0);h1=Math.imul(h1,16777619)>>>0}return h1.toString(36).toUpperCase().padStart(6,'0').slice(-5)}
+function makeCode(r){const base='N'+r.no+'-V'+r.v+'-S'+r.score+'-P'+r.leaves+'-T'+r.mins;return base+'-'+sig(base)}
+function parseCode(c){c=(c||'').trim().toUpperCase();const m=c.match(/^N(\d+)-V(\d)-S(\d+)-P(\d+)-T(\d+)-([0-9A-Z]{5})$/);if(!m)return null;const base=c.slice(0,c.lastIndexOf('-'));return {no:+m[1],v:+m[2],score:+m[3],leaves:+m[4],mins:+m[5],ok:sig(base)===m[6]}}
+
+/* ============ синхронизация Exit-ticket с базой (Supabase через K8DB) ============ */
+const DB=window.K8DB||{online:false,submitted:async()=>[],insert:async()=>({local:true})};
+const ONLINE=DB.online;
+async function submittedNos(){try{return await DB.submitted('results')}catch(e){return []}}
+async function syncResult(r){if(!ONLINE)return false;try{await DB.insert('results',{no:r.no,name:r.name,v:r.v,score:r.score,max:r.max,leaves:r.leaves,away_sec:r.awaySec,mins:r.mins,detail:r.detail,code:r.code});const all=results();const x=all.find(y=>y.no===r.no);if(x){x.synced=true;store.set(K_RES,all)}return true}catch(e){return false}}
+function syncPending(){results().filter(r=>!r.synced).forEach(r=>{syncResult(r)});window.K8X&&window.K8X.syncPending()}
+window.addEventListener('online',syncPending);
+if(ONLINE)setInterval(()=>{if(results().some(r=>!r.synced))syncPending()},20000);
+
+/* ============ routing ============ */
+let cleanup=null;
+function route(){const id=(location.hash||'#home').slice(1);if(cleanup){cleanup();cleanup=null}$('#overlay').hidden=true;
+ const run=store.get(K_RUN,null);
+ if(run&&id!=='work'){location.hash='work';return}
+ $('#homeBtn').hidden=(id==='home'||id==='');$('#monitor').hidden=true;
+ const t=topics.find(x=>x.id===id);
+ if(id==='journal'){location.hash='admin';return}
+ if(t)renderDeck(t);else if(id==='work')renderWork();
+ else if((id==='practice'||id==='admin'||id==='screen')&&window.K8X)cleanup=window.K8X.render(id,{h,$,view,dialog,store,NAMES,nf,parseCode,MAXPTS,results,clearLocalResults:()=>{store.set(K_RES,[]);try{localStorage.removeItem(K_RUN)}catch(e){}}})||null;
+ else renderHome();
+ window.scrollTo(0,0)}
+$('#homeBtn').onclick=()=>{location.hash='home'};
+window.addEventListener('hashchange',route);
+
+/* ============ HOME ============ */
+function renderHome(){view.innerHTML='';const w=h('<div class="wrap"></div>');
+ w.append(h('<section class="hero"><div class="label">Налоги и налогообложение · Команда 8 · НК РК 2026</div><h1 style="margin-top:12px">Налоговая отчётность, <em>декларирование</em> и комплексный расчёт</h1><p>Пять тем — пять докладчиков. Листайте слайды стрелками. После тем — работа на закрепление, в самом конце — Exit-ticket.</p></section>'));
+ const g=h('<div class="tiles"></div>');
+ topics.forEach(t=>{const b=h('<button type="button" class="tile"><span class="n">'+t.n+'</span><h2>'+t.title+'</h2><p>'+t.short+'</p><span class="arts">'+t.arts+' · '+t.slides.length+' '+(n=>n%10===1&&n%100!==11?'слайд':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'слайда':'слайдов')(t.slides.length)+'</span></button>');b.onclick=()=>{location.hash=t.id};g.appendChild(b)});
+ const pr=h('<button type="button" class="tile practice"><span class="n">06</span><h2>Работа на закрепление</h2><p>10 вопросов по всем пяти темам. После каждого ответа — объяснение, почему он верный или неверный.</p><span class="arts">10 баллов · около 10 минут</span></button>');pr.onclick=()=>{location.hash='practice'};g.appendChild(pr);
+ w.append(g);
+ const j=h('<div class="sub-tiles"><button type="button" class="tile work"><span class="n">✎</span><h2>Exit-ticket</h2><p>Финальная проверка в конце занятия: 8 заданий по всем темам, 4 варианта. Выберите своё имя. Уход со страницы фиксируется.</p><span class="arts">20 баллов · около 15 минут</span></button><button type="button" class="tile small" style="min-height:auto"><h2 style="font-size:1rem">Панель ведущих</h2><p>Ход игры, вывод кейса на экран, результаты закрепления и Exit-ticket. Нужен PIN.</p></button></div>');
+ j.children[0].onclick=()=>{location.hash='work'};j.children[1].onclick=()=>{location.hash='admin'};w.append(j);
+ view.append(w)}
+
+/* ============ DECK ============ */
+function renderDeck(t){view.innerHTML='';let i=0;const w=h('<section class="wrap deck"></section>');
+ w.append(h('<div class="deck-head"><span class="tn">'+t.n+'</span><h2>'+t.title+'</h2><span class="label">'+t.arts+'</span></div>'));
+ const holder=h('<div></div>');const ctrl=h('<div class="ctrl"><button class="btn ghost" type="button" id="prev">← Назад</button><div class="dots"></div><span class="mono" id="cnt" style="color:var(--muted)"></span><button class="btn" type="button" id="next">Далее →</button></div>');
+ const dots=ctrl.querySelector('.dots');t.slides.forEach((_,k)=>{const d=h('<button type="button" aria-label="Слайд '+(k+1)+'"></button>');d.onclick=()=>show(k);dots.appendChild(d)});
+ function show(k){i=Math.max(0,Math.min(t.slides.length-1,k));holder.innerHTML='';const s=h('<article class="slide"></article>');t.slides[i](s);holder.appendChild(s);
+  [...dots.children].forEach((d,j)=>d.setAttribute('aria-current',j===i));ctrl.querySelector('#cnt').textContent=(i+1)+' / '+t.slides.length;
+  ctrl.querySelector('#prev').disabled=i===0;const nx=ctrl.querySelector('#next');const ti=topics.indexOf(t);
+  nx.textContent=i<t.slides.length-1?'Далее →':(ti<topics.length-1?'Следующая тема →':'К закреплению →')}
+ ctrl.querySelector('#prev').onclick=()=>show(i-1);
+ ctrl.querySelector('#next').onclick=()=>{if(i<t.slides.length-1)show(i+1);else{const ti=topics.indexOf(t);location.hash=ti<topics.length-1?topics[ti+1].id:'practice'}};
+ const key=e=>{if(e.target.matches('input,select,textarea'))return;if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();ctrl.querySelector('#next').click()}if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();if(i>0)show(i-1)}};
+ document.addEventListener('keydown',key);cleanup=()=>document.removeEventListener('keydown',key);
+ w.append(holder,ctrl);view.append(w);show(0)}
+
+/* ============ WORK ============ */
+function renderWork(){view.innerHTML='';const run=store.get(K_RUN,null);if(run){renderTest(run,true);return}
+ const done=new Set(results().map(r=>r.no));
+ const w=h('<section class="wrap"><div class="sheet" style="display:grid;gap:18px"></div></section>');const sh=w.firstElementChild;
+ sh.append(h('<div><div class="label">Exit-ticket · финальная проверка</div><h2 style="font-size:1.7rem;margin-top:6px">Выберите своё имя</h2><p style="color:var(--muted);margin-top:6px">Вариант назначается автоматически. Сдать работу под одним именем можно только один раз.</p></div>'));
+ const search=h('<input class="search" type="search" id="nameSearch" placeholder="Начните вводить фамилию">');const grid=h('<div class="namegrid" role="listbox" aria-label="Список студентов"></div>');let sel=null;
+ const start=h('<button class="btn" type="button" disabled>Начать работу</button>');const info=h('<div class="reveal">Имя не выбрано.</div>');
+ function draw(){const q=search.value.trim().toLowerCase();grid.innerHTML='';NAMES.filter(s=>s.name.toLowerCase().includes(q)).forEach(s=>{const isDone=done.has(s.no);
+  const b=h('<button type="button" class="nm'+(isDone?' done':'')+'" aria-pressed="'+(sel===s)+'"'+(isDone?' aria-disabled="true"':'')+'><span class="no">'+s.no+'.</span><span>'+s.name+(isDone?' · сдано':'')+'</span></button>');
+  b.onclick=()=>{if(isDone){info.innerHTML='<b style="color:var(--bad)">Работа под этим именем уже сдана.</b> Повторная сдача невозможна.';return}sel=s;draw();info.innerHTML='<b>'+s.name+'</b> · вариант <b>'+s.v+'</b>';start.disabled=false};grid.appendChild(b)})}
+ search.oninput=draw;draw();
+ submittedNos().then(n=>{if(!n.length)return;n.forEach(x=>done.add(x));if(sel&&done.has(sel.no)){sel=null;start.disabled=true;info.textContent='Имя не выбрано.'}draw()});
+ sh.append(search,grid,info,h('<div class="warnbox"><h3>Внимание: переходы со страницы фиксируются</h3><p>После начала работы сайт считает каждый уход со страницы: переключение на другую вкладку или приложение, сворачивание окна, перезагрузку. Количество переходов показывается вверху экрана и попадает в результат. За переходы снижаются баллы. Не покидайте сайт до нажатия «Сдать работу».</p></div>'),start);
+ start.onclick=async()=>{if(!sel)return;const srv=await submittedNos();if(new Set(results().map(r=>r.no).concat(srv)).has(sel.no)){done.add(sel.no);draw();info.innerHTML='<b style="color:var(--bad)">Работа под этим именем уже сдана.</b>';return}
+  dialog('<h3>Начать работу?</h3><p><b>'+sel.name+'</b>, вариант '+sel.v+'.</p><p>С этого момента каждый уход со страницы будет зафиксирован.</p><label style="display:flex;gap:8px;align-items:flex-start"><input type="checkbox" id="agree" style="width:auto;margin-top:5px"> Я понимаю и не буду покидать страницу</label>',
+   [{t:'Отмена',cls:'ghost'},{t:'Начать',on:()=>{if(!$('#agree')||!$('#agree').checked){dialog('<h3>Подтвердите правило</h3><p>Отметьте, что вы понимаете: переходы со страницы фиксируются.</p>',[{t:'Понятно',on:()=>start.click()}]);return}
+     const r={no:sel.no,name:sel.name,v:sel.v,started:Date.now(),leaves:0,awayMs:0,answers:{},events:[]};store.set(K_RUN,r);renderTest(r,false)}}]);
+  /* checkbox lives in the dialog; the Начать handler reads it before the dialog closes */
+ };
+ view.append(w)}
+
+function renderTest(run,resumed){view.innerHTML='';const mon=$('#monitor');mon.hidden=false;$('#homeBtn').hidden=true;
+ const s=NAMES.find(x=>x.no===run.no);$('#mWho').textContent=s.name;$('#mVar').textContent='Вариант '+run.v;
+ const qs=VARIANTS[run.v];let away=false,awayStart=0;
+ if(resumed){run.leaves++;run.events.push({t:Date.now(),e:'reload'});store.set(K_RUN,run)}
+ const paint=()=>{const l=$('#mLeaves');l.textContent='Переходов со страницы: '+run.leaves;l.classList.toggle('has',run.leaves>0)};paint();
+ const leave=(why)=>{if(away)return;away=true;awayStart=Date.now();run.leaves++;run.events.push({t:awayStart,e:why});store.set(K_RUN,run);paint()};
+ const back=()=>{if(!away)return;away=false;run.awayMs+=Date.now()-awayStart;store.set(K_RUN,run);paint();
+  dialog('<h3 style="color:var(--bad)">Вы покинули страницу</h3><p>Переход зафиксирован. Всего переходов: <b>'+run.leaves+'</b>.</p>',[{t:'Вернуться к работе'}])};
+ const vis=()=>{document.hidden?leave('hidden'):back()};const bl=()=>leave('blur');const fo=()=>back();const ph=()=>{store.set(K_RUN,run)};
+ document.addEventListener('visibilitychange',vis);window.addEventListener('blur',bl);window.addEventListener('focus',fo);window.addEventListener('pagehide',ph);
+ const timer=setInterval(()=>{const m=Math.floor((Date.now()-run.started)/1000);$('#mTime').textContent=String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')},1000);
+ cleanup=()=>{document.removeEventListener('visibilitychange',vis);window.removeEventListener('blur',bl);window.removeEventListener('focus',fo);window.removeEventListener('pagehide',ph);clearInterval(timer)};
+ const w=h('<section class="wrap"><div class="sheet" style="display:grid;gap:18px"></div></section>');const sh=w.firstElementChild;
+ sh.append(h('<div><div class="label">Вариант '+run.v+' · '+MAXPTS+' баллов</div><h2 style="font-size:1.5rem;margin-top:6px">'+s.name+'</h2><p style="color:var(--muted);margin-top:6px">Задания 1–6: выберите один ответ (2 балла). Задания 7–8: впишите число в тенге без пробелов и копеек (4 балла).</p></div>'));
+ if(resumed)sh.append(h('<div class="warnbox"><h3>Работа продолжена после перезагрузки</h3><p>Перезагрузка засчитана как переход со страницы. Ваши ответы сохранены.</p></div>'));
+ const list=h('<div class="qlist"></div>');
+ qs.forEach((q,i)=>{const it=h('<div class="qitem"><div class="qh"><span>'+q[1]+'</span><span class="pts">'+q[4]+' б.</span></div></div>');
+  if(q[0]==='c'){const c=h('<div class="choice"></div>');q[2].forEach((o,j)=>{const lab=h('<label><input type="radio" name="q'+i+'" value="'+j+'"><span>'+o+'</span></label>');const inp=lab.querySelector('input');if(run.answers[i]===j)inp.checked=true;inp.onchange=()=>{run.answers[i]=j;store.set(K_RUN,run)};c.appendChild(lab)});it.appendChild(c)}
+  else{const inp=h('<input type="number" inputmode="numeric" placeholder="Ответ, ₸" style="max-width:260px">');if(run.answers[i]!=null)inp.value=run.answers[i];inp.oninput=()=>{run.answers[i]=inp.value===''?null:+inp.value;store.set(K_RUN,run)};it.appendChild(inp)}
+  list.appendChild(it)});
+ const submit=h('<button class="btn blue" type="button" style="justify-self:start;font-size:1.05rem;padding:13px 24px">Сдать работу</button>');
+ submit.onclick=()=>{const empty=qs.filter((_,i)=>run.answers[i]==null).length;
+  dialog('<h3>Сдать работу?</h3>'+(empty?'<p style="color:var(--bad)">Без ответа: '+empty+' из '+qs.length+'.</p>':'')+'<p>После сдачи изменить ответы и сдать работу ещё раз под этим именем нельзя.</p>',[{t:'Вернуться',cls:'ghost'},{t:'Сдать',on:finish}])};
+ function finish(){let score=0;const detail=qs.map((q,i)=>{const a=run.answers[i];let ok=false;if(q[0]==='c')ok=a===q[3];else ok=a!=null&&Math.abs(a-q[2])<=q[3];if(ok)score+=q[4];return ok?1:0});
+  const mins=Math.max(1,Math.round((Date.now()-run.started)/60000));
+  const r={no:run.no,name:run.name,v:run.v,score,max:MAXPTS,leaves:run.leaves,awaySec:Math.round(run.awayMs/1000),mins,detail,at:new Date().toISOString()};r.code=makeCode(r);
+  const all=results();if(!all.some(x=>x.no===r.no)){all.push(r);store.set(K_RES,all)}
+  try{localStorage.removeItem(K_RUN)}catch(e){}cleanup();cleanup=null;$('#monitor').hidden=true;showResult(r)}
+ sh.append(list,submit);view.append(w)}
+
+function showResult(r){view.innerHTML='';const w=h('<section class="wrap"><div class="sheet result"></div></section>');const sh=w.firstElementChild;
+ sh.append(h('<div class="label">Exit-ticket сдан</div>'),h('<h2 style="font-size:1.4rem">'+r.name+'</h2>'),h('<div class="score">'+r.score+' / '+r.max+'</div>'),
+  h('<p>Вариант '+r.v+' · переходов со страницы: <b style="color:'+(r.leaves?'var(--bad)':'var(--green-2)')+'">'+r.leaves+'</b> · время: '+r.mins+' мин.</p>'),
+  h('<p style="color:var(--muted)">Код результата — покажите его команде или перепишите в бланк:</p>'),h('<div class="code">'+r.code+'</div>'),
+  h('<p style="color:var(--muted);font-size:.9rem">Верные ответы: '+r.detail.map((d,i)=>(i+1)+(d?' ✓':' ✗')).join(' · ')+'</p>'));
+ if(ONLINE){const st=h('<div class="reveal" style="text-align:left">Отправляем результат в журнал…</div>');sh.append(st);
+  (r.synced?Promise.resolve(true):syncResult(r)).then(ok=>{st.innerHTML=ok?'<b style="color:var(--green-2)">✓ Результат сохранён в общем журнале.</b>':'<b style="color:var(--bad)">Не удалось отправить результат: нет связи с сервером.</b> Не закрывайте браузер и не очищайте его — результат отправится сам, когда связь появится. Код выше — запасной способ.'})}
+ const b=h('<button class="btn ghost" type="button">На главную</button>');b.onclick=()=>{location.hash='home'};sh.append(b);view.append(w)}
+
+syncPending();
+route();
+})();
+</script>
+</body>
+</html>

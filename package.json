@@ -1,0 +1,9 @@
+{
+  "name": "nalog-team8",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Сайт урока «Налоговая отчётность» и игра «Налоговая мафия»",
+  "main": "server.js",
+  "scripts": { "start": "node server.js" },
+  "engines": { "node": ">=18" }
+}

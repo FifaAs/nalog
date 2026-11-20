@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Налоговая мафия · правила и симуляция</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#f3f8f6;--card:#fff;--ink:#10302f;--muted:#56706f;--line:#d3e4df;
+  --green:#14875a;--green-2:#0f6b47;--green-soft:#e1f4ea;
+  --blue:#1e6bb0;--blue-2:#164f84;--blue-soft:#e2eef9;
+  --bad:#c0392b;--bad-soft:#fdecea;--warn:#b26b00;--warn-soft:#fff3dd;
+  --r-mafia:#2a2f37;--r-mimic:#8a4fbf;--r-inspector:#1e6bb0;--r-consultant:#14875a;--r-auditor:#b26b00;--r-honest:#6b8583;--r-hidden:#b7c9c5;
+  --display:"Manrope","Segoe UI",system-ui,sans-serif;--body:"Golos Text","Segoe UI",system-ui,sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+h1,h2,h3,h4{font-family:var(--display);margin:0;line-height:1.15;text-wrap:balance}
+p{margin:0}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:0 16px}
+.label{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.ref{font-family:var(--mono);font-size:.72rem;color:var(--blue-2);background:var(--blue-soft);border-radius:6px;padding:1px 7px}
+section{padding:34px 0 10px}
+section>.wrap>h2{font-size:clamp(1.4rem,3vw,1.9rem);margin:6px 0 16px}
+.hero{padding:40px 0 18px}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);font-weight:800;letter-spacing:-.02em;max-width:20ch}
+.hero h1 em{font-style:normal;color:var(--green)}
+.hero p{margin-top:12px;color:var(--muted);max-width:68ch;font-size:1.05rem}
+.nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.nav a{font-weight:600;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:7px 14px}
+.nav a:hover{border-color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.grid>*,.role>*,.sim>*,.flow>*,.pres>*{min-width:0}
+.lead{color:var(--muted);max-width:72ch}
+/* role cards */
+.role{display:grid;grid-template-columns:54px 1fr;gap:12px;align-items:start}
+.role h3{font-size:1.08rem}
+.role .who{font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.role ul{margin:6px 0 0;padding-left:18px;font-size:.93rem;display:grid;gap:3px}
+.role svg{width:54px;height:62px}
+/* steps */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;counter-reset:s}
+.flow .card{counter-increment:s;position:relative;padding-top:44px}
+.flow .card::before{content:counter(s);position:absolute;top:12px;left:16px;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-family:var(--display);font-weight:800;display:grid;place-items:center;font-size:.9rem}
+.flow .t{position:absolute;top:15px;right:16px;font-family:var(--mono);font-size:.75rem;color:var(--muted)}
+.flow h4{font-size:1.05rem;margin-bottom:4px}
+.flow p{font-size:.93rem;color:var(--muted)}
+table{border-collapse:collapse;width:100%}
+th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;font-size:.95rem}
+th{font-family:var(--display);color:var(--blue);background:#f7fbfa}
+tr:last-child td{border-bottom:0}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.num{text-align:right;font-family:var(--mono);white-space:nowrap}
+.pos{color:var(--green-2)}.neg{color:var(--bad)}
+.note{border-left:4px solid var(--green);background:var(--green-soft);border-radius:0 12px 12px 0;padding:12px 16px}
+.note.b{border-color:var(--blue);background:var(--blue-soft)}
+.note b.k{display:block;font-family:var(--mono);font-size:.74rem;letter-spacing:.05em;color:var(--green-2);margin-bottom:3px}
+.note.b b.k{color:var(--blue-2)}
+/* presenters */
+.pres{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.pcard{text-align:center;display:grid;justify-items:center;gap:6px}
+.pcard svg{width:46px;height:54px}
+.pcard h4{font-size:.98rem}
+.pcard p{font-size:.88rem;color:var(--muted)}
+/* simulation */
+.sim{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:16px;align-items:start}
+.board{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px;position:relative}
+.board svg{width:100%;height:auto;display:block}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.btn{border:0;border-radius:10px;padding:10px 16px;cursor:pointer;font-weight:600;background:var(--green);color:#fff}
+.btn:hover{background:var(--green-2)}
+.btn.ghost{background:var(--card);color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{all:unset;cursor:pointer;padding:7px 12px;border-radius:8px;font-weight:600;font-size:.9rem;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.seg button:focus-visible{outline:3px solid var(--blue)}
+.sp{flex:1}
+.stepno{font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+.timeline{display:flex;gap:4px;flex-wrap:wrap;margin-top:12px}
+.timeline button{all:unset;cursor:pointer;height:10px;flex:1 1 14px;min-width:10px;border-radius:5px;background:var(--line)}
+.timeline button.q{margin-left:8px}
+.timeline button.done{background:#9fd6bb}
+.timeline button[aria-current="true"]{background:var(--green)}
+.timeline button:focus-visible{outline:3px solid var(--blue)}
+.panel{display:grid;gap:12px}
+.phase{background:var(--ink);color:#fff;border-radius:16px;padding:16px 18px;display:grid;gap:6px}
+.phase .label{color:#a9c4bf}
+.phase h3{font-size:1.35rem}
+.phase p{opacity:.92}
+.case{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:8px}
+.case .qt{font-weight:600}
+.case ol{margin:0;padding-left:22px;display:grid;gap:2px;font-size:.93rem}
+.case li.ok{color:var(--green-2);font-weight:700}
+.evs{display:grid;gap:6px}
+.ev{border-left:4px solid var(--blue);background:var(--blue-soft);border-radius:0 10px 10px 0;padding:8px 12px;font-size:.93rem}
+.ev.hit{border-color:var(--bad);background:var(--bad-soft)}
+.ev.good{border-color:var(--green);background:var(--green-soft)}
+.ev.priv{border-color:var(--r-mimic);background:#f3ebfa}
+.ev.priv::before{content:"видят только ведущие · ";font-family:var(--mono);font-size:.7rem;color:var(--r-mimic)}
+.think{background:#eef5ff;border:1px dashed var(--blue);border-radius:12px;padding:10px 14px;font-size:.93rem}
+.think b{color:var(--blue-2)}
+.hosts{display:flex;gap:6px;flex-wrap:wrap}
+.host{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:3px 10px 3px 4px;font-size:.82rem;background:var(--card);opacity:.45}
+.host.on{opacity:1;border-color:var(--green);background:var(--green-soft)}
+.host i{width:22px;height:22px;border-radius:50%;background:var(--ink);color:#fff;font-style:normal;font-family:var(--display);font-weight:800;font-size:.72rem;display:grid;place-items:center}
+.host.on i{background:var(--green)}
+.score{display:grid;gap:5px}
+.srow{display:grid;grid-template-columns:110px 1fr 46px 44px;gap:8px;align-items:center;font-size:.9rem}
+.srow .bar{height:12px;border-radius:6px;background:var(--line);overflow:hidden}
+.srow .bar i{display:block;height:100%;border-radius:6px;transition:width .45s}
+.srow .d{font-family:var(--mono);font-size:.8rem;text-align:right}
+.srow .v{font-family:var(--mono);text-align:right;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend b{width:18px;height:3px;border-radius:2px;display:inline-block}
+/* svg */
+.person .body,.person .head{transition:fill .35s}
+.person.sleep{opacity:.45}
+.person .ring{fill:none;stroke-width:3;stroke-dasharray:6 5}
+.arrow{fill:none;stroke-width:3.2;stroke-linecap:round}
+.arrow.void{stroke-dasharray:3 7;opacity:.55}
+.alabel{font-family:var(--mono);font-size:12px;paint-order:stroke;stroke:#fff;stroke-width:4px}
+.tname{font-family:var(--display);font-weight:800;font-size:15px;fill:var(--ink)}
+.trole{font-family:var(--mono);font-size:11px}
+.tscore{font-family:var(--mono);font-size:13px;font-weight:600}
+.tdelta{font-family:var(--mono);font-size:14px;font-weight:700}
+.ctr-q{font-family:var(--display);font-weight:800;font-size:22px;fill:var(--ink)}
+.ctr-p{font-family:var(--mono);font-size:13px;fill:var(--muted);letter-spacing:.08em}
+.final{display:grid;gap:10px}
+.role li,.role p{overflow-wrap:anywhere}
+@media (max-width:980px){.sim{grid-template-columns:minmax(0,1fr)}.g3,.g4,.flow{grid-template-columns:repeat(2,minmax(0,1fr))}.pres{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:620px){.g2,.g3,.g4,.flow,.pres{grid-template-columns:minmax(0,1fr)}.srow{grid-template-columns:84px 1fr 40px 40px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header class="hero"><div class="wrap">
+  <div class="label">Налоги и налогообложение · Команда 8 · интерактив</div>
+  <h1 style="margin-top:10px">Налоговая <em>мафия</em>: правила и полная симуляция партии</h1>
+  <p>8 команд, у каждой тайная роль. 5 кварталов — 5 тем урока. Очки даёт в первую очередь знание: верный ответ на кейс приносит баллы и «включает» ночное действие роли. Ниже — правила, роли пяти ведущих и пошаговая симуляция целой игры.</p>
+  <nav class="nav"><a href="#rules">Правила</a><a href="#roles">Роли команд</a><a href="#hosts">5 ведущих</a><a href="#clues">Как вычислить Схемщиков</a><a href="#sim">Симуляция партии</a></nav>
+</div></header>
+
+<section id="rules"><div class="wrap">
+  <div class="label">Правила за минуту</div>
+  <h2>Ход одного квартала (≈ 6 минут)</h2>
+  <div class="flow">
+    <div class="card"><span class="t">2 мин</span><h4>Кейс</h4><p>Ведущий-докладчик темы читает кейс. Каждая команда решает его на бланке и отправляет ответ с телефона. Верный ответ: <b>+10</b>.</p></div>
+    <div class="card"><span class="t">30 сек</span><h4>Ночь</h4><p>Каждая роль тайно выбирает одну команду. <b>Действие срабатывает, только если команда ответила на кейс верно.</b></p></div>
+    <div class="card"><span class="t">1,5 мин</span><h4>Утро</h4><p>Разбор кейса: верный ответ и норма НК. На экране — кто ответил верно и что случилось ночью. Устный вопрос по вызову Аудитора.</p></div>
+    <div class="card"><span class="t">2 мин</span><h4>День и голосование</h4><p>Обсуждение и голосование: кого отправить на выездную проверку. При ничьей проверки нет.</p></div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="tbl"><table>
+      <thead><tr><th>Событие</th><th class="num">Очки</th></tr></thead>
+      <tbody>
+        <tr><td>Верный ответ на кейс</td><td class="num pos">+10</td></tr>
+        <tr><td>Схема сработала (цель ошиблась в кейсе)</td><td class="num">Схемщикам <span class="pos">+5</span>, цели <span class="neg">−5</span></td></tr>
+        <tr><td>Консультант сорвал схему</td><td class="num">Консультанту <span class="pos">+5</span></td></tr>
+        <tr><td>Устный вопрос Аудитора: ответили / не ответили</td><td class="num"><span class="pos">+5</span> / <span class="neg">−5</span> (Аудитору <span class="pos">+5</span>)</td></tr>
+        <tr><td>Голос против Мимика / Мимика отправили на проверку</td><td class="num"><span class="pos">+1</span> за голос / <span class="pos">+10</span></td></tr>
+        <tr><td>Проверка честной команды: ответила / не ответила устно</td><td class="num">0 / <span class="neg">−5</span></td></tr>
+        <tr><td>Схемщики пойманы</td><td class="num">им <span class="neg">−20</span>, остальным <span class="pos">+10</span></td></tr>
+      </tbody></table></div>
+    <div class="grid">
+      <div class="note"><b class="k">НИКТО НЕ ВЫБЫВАЕТ</b>Все команды решают кейсы все 5 кварталов. Пойманные Схемщики теряют ночное действие («лицензия отозвана»), но продолжают отвечать. После поимки голосований больше нет — остаются кейсы и вызовы Аудитора.</div>
+      <div class="note b"><b class="k">ПОБЕДА</b>После 5 кварталов побеждает команда с наибольшим числом очков. Знания дают до 50 очков, роли — обычно ±10–20, поэтому без знаний не выиграть.</div>
+      <div class="note"><b class="k">ОЦЕНКА ДЛЯ ПРЕПОДАВАТЕЛЯ</b>Верные ответы и устные ответы идут в баллы за знания; очки ролей — только в рейтинг игры (активность не более 10 баллов по методичке). Индивидуально каждого оценивает самостоятельная работа по именам.</div>
+    </div>
+  </div>
+</div></section>
+
+<section id="roles"><div class="wrap">
+  <div class="label">8 команд — 6 ролей</div>
+  <h2>Роли команд</h2>
+  <div class="grid g3" id="roleCards"></div>
+</div></section>
+
+<section id="hosts"><div class="wrap">
+  <div class="label">Команда 8 — пять ведущих</div>
+  <h2>Кто из ведущих что делает</h2>
+  <p class="lead" style="margin-bottom:14px">Квартал = тема. Докладчик темы квартала становится <b>кейс-мастером</b>: читает свой кейс и утром разбирает ответ. Кроме этого у каждого ведущего постоянная задача на всю игру.</p>
+  <div class="pres" id="presCards"></div>
+</div></section>
+
+<section id="clues"><div class="wrap">
+  <div class="label">Почему это не угадайка</div>
+  <h2>Как Инспектор и зал вычисляют Схемщиков</h2>
+  <div class="grid g3">
+    <div class="card"><h4>1. Улика из знаний</h4><p style="margin-top:6px;color:var(--muted)">Схема срабатывает только при верном ответе Схемщиков. Если кто-то ночью получил −5 — Схемщики среди команд с ✓. Пересекая списки ✓ за несколько кварталов, круг быстро сужается.</p></div>
+    <div class="card"><h4>2. Проверки Инспектора</h4><p style="margin-top:6px;color:var(--muted)">Каждая проверка тайно исключает одного подозреваемого. Мимик для Инспектора выглядит «не Схемщиками». Один раз за игру Инспектор может показать «удостоверение» — открыть свою роль, чтобы ему поверили.</p></div>
+    <div class="card"><h4>3. Поведение днём</h4><p style="margin-top:6px;color:var(--muted)">Кого выбирают ночью (виден только счёт подозрений), кто кого обвиняет и за кого голосует. Схемщикам выгодно уводить подозрения на сильные команды.</p></div>
+  </div>
+</div></section>
+
+<section id="sim"><div class="wrap">
+  <div class="label">Пошаговая симуляция</div>
+  <h2>Полная партия: 8 команд, 5 кварталов</h2>
+  <p class="lead" style="margin-bottom:14px">Нажимайте «Далее» или стрелку → на клавиатуре. Переключатель меняет взгляд: <b>«Глазами зала»</b> — роли скрыты, как видят участники; <b>«Глазами ведущих»</b> — видны роли и все ночные ходы. Очки считает скрипт по правилам выше.</p>
+  <div class="toolbar">
+    <button class="btn ghost" id="prev" type="button">← Назад</button>
+    <button class="btn" id="next" type="button">Далее →</button>
+    <button class="btn ghost" id="play" type="button">▶ Автоигра</button>
+    <span class="stepno" id="stepno"></span>
+    <span class="sp"></span>
+    <div class="seg" role="group" aria-label="Режим просмотра"><button type="button" data-v="public" aria-pressed="false">Глазами зала</button><button type="button" data-v="host" aria-pressed="true">Глазами ведущих</button></div>
+  </div>
+  <div class="sim">
+    <div>
+      <div class="board"><svg id="board" viewBox="0 0 900 600" role="img" aria-label="Игровой стол: 8 команд вокруг стола"></svg></div>
+      <div class="legend" id="legend"></div>
+      <div class="timeline" id="timeline" aria-label="Шаги симуляции"></div>
+    </div>
+    <div class="panel" id="panel"></div>
+  </div>
+</div></section>
+
+<section><div class="wrap" style="padding-bottom:40px">
+  <p class="label">Кейсы в симуляции взяты из тем урока и сверены с НК РК (ст. 114, 115, 505, 556–557) и КоАП РК (ст. 278).</p>
+</div></section>
+
+<script>
+(function(){
+"use strict";
+/* ---------- data ---------- */
+const ROLES={
+  mafia:{n:'Схемщики',c:'var(--r-mafia)',hex:'#2a2f37',count:'1 команда',d:'Ставят на команду, которая ошибётся в кейсе.',li:['Цель ошиблась → Схемщикам +5, цели −5','Срабатывает, только если Схемщики ответили верно','Пойманы проверкой → −20, ночное действие отключено']},
+  mimic:{n:'Мимик',c:'var(--r-mimic)',hex:'#8a4fbf',count:'1 команда',d:'Хочет, чтобы подозревали именно его.',li:['+1 за каждый голос против себя','+10, если его отправили на проверку','Для Инспектора выглядит «не Схемщиками»']},
+  inspector:{n:'Инспектор КГД',c:'var(--r-inspector)',hex:'#1e6bb0',count:'1 команда',d:'Ночью тайно проверяет одну команду.',li:['Узнаёт: Схемщики или нет','Ордер выдаётся только при верном ответе','Один раз может показать «удостоверение»']},
+  consultant:{n:'Консультант',c:'var(--r-consultant)',hex:'#14875a',count:'1 команда',d:'Ночью защищает одну команду.',li:['Отменяет −5 от схемы','Сорвал схему → +5 себе','Защита работает при верном ответе']},
+  auditor:{n:'Аудитор',c:'var(--r-auditor)',hex:'#b26b00',count:'1 команда',d:'Вызывает команду на устный вопрос утром.',li:['Ответили → им +5','Не ответили → им −5, Аудитору +5','Вызов работает при верном ответе']},
+  honest:{n:'Добросовестное ТОО',c:'var(--r-honest)',hex:'#6b8583',count:'3 команды',d:'Честно решают кейсы и вычисляют Схемщиков.',li:['Ночью отмечают, кого подозревают','Утром виден общий счёт подозрений','Главная сила — голосование']}
+};
+const TEAMS=[
+  {id:'A',name:'Актив',role:'honest'},{id:'B',name:'Баланс',role:'mafia'},{id:'V',name:'Вектор',role:'inspector'},{id:'G',name:'Гарант',role:'consultant'},
+  {id:'D',name:'Дебет',role:'mimic'},{id:'R',name:'Ресурс',role:'auditor'},{id:'K',name:'Кредит',role:'honest'},{id:'S',name:'Сальдо',role:'honest'}];
+const T=Object.fromEntries(TEAMS.map(t=>[t.id,t]));
+const roleId=r=>TEAMS.find(t=>t.role===r).id;
+const HOSTS=[
+  {n:1,duty:'Главный ведущий',d:'Запускает этапы, держит таймер, объявляет события утра.'},
+  {n:2,duty:'Судья проверки',d:'Задаёт устные вопросы (вызов Аудитора и выездная проверка), ставит ✓ или ✗.'},
+  {n:3,duty:'Наблюдатель ночи',d:'Видит роли и ночные ходы. В финале рассказывает, «как всё было».'},
+  {n:4,duty:'Протоколист',d:'Отмечает ответы, норму на бланках, ведёт счёт, выгружает таблицу.'},
+  {n:5,duty:'Оператор экрана',d:'Ведёт проектор: кейс, разбор, итоги голосования, разоблачение.'}];
+/* who of the hosts is active in a phase (+ case master = topic presenter) */
+const HOST_ON={roles:[1,3],case:[1,5],answers:[4,5],night:[1,3],morning:[2,4,5],vote:[1,5],verdict:[2,4],final:[3,4,5]};
+
+const Q=[
+ {topic:'Тема 1 · Виды отчётности',text:'ТОО снимается с регистрационного учёта по НДС. Какой вид отчётности оно подаёт?',opts:['Очередную','Дополнительную','Ликвидационную','По уведомлению'],c:2,ref:'пп. 5 п. 3 ст. 114 НК РК',
+  wrong:['D','K'],night:{mafia:'K',consult:'A',inspect:'D',audit:'S'},susp:{A:'D',K:'B',S:'D'},oral:{S:true},
+  votes:{A:'D',B:'D',V:'skip',G:'D',D:'B',R:'D',K:'B',S:'D'},voteOral:{},
+  say:{case:'Докладчик темы 1 читает кейс. Команды решают на бланках и отправляют ответ.',answers:'Ошиблись Дебет и Кредит. Остальные получают +10.',night:'Схемщики ставят на Кредит — слабую команду. Консультант защищает Актив. Инспектор проверяет наугад Дебет. Аудитор вызывает Сальдо.',
+   morning:'Сальдо уверенно отвечает устно. На экране: «Кредит получил фиктивное нарушение».',vote:'Дебет громко оправдывается и сам просит проверку — зал клюёт: 5 голосов против Дебета.',verdict:'Проверка открывает: Дебет — Мимик. Он заработал на подозрениях. Зал понимает, что его провели.'},
+  think:'Кредит получил −5 — значит, схема сработала и Схемщики ответили <b>верно</b>. Подозреваемые — команды с ✓: Актив, Баланс, Гарант, Ресурс, Сальдо. Моя проверка Дебета: «не Схемщики».'},
+ {topic:'Тема 2 · Порядок декларирования',text:'Декларация получила статус «Документ не принят». Как она считается?',opts:['Представленной','Непредставленной','Представленной с опозданием','Дополнительной'],c:1,ref:'п. 5 ст. 115 НК РК',
+  wrong:['A','G'],night:{mafia:'G',consult:'S',inspect:'S',audit:'A'},susp:{A:'R',K:'B',S:'B'},oral:{A:false},
+  votes:{A:'R',B:'R',V:'B',G:'R',D:'R',R:'B',K:'B',S:'B'},voteOral:{},
+  say:{case:'Докладчик темы 2 читает кейс про статус «Документ не принят».',answers:'Ошиблись Актив и Гарант. Консультант ошибся — его защита этой ночью не работает.',night:'Схемщики ставят на Гарант. Консультант пытается защитить Сальдо, но без верного ответа защиты нет. Инспектор проверяет Сальдо. Аудитор вызывает Актив.',
+   morning:'Актив не может объяснить норму — −5, Аудитору +5. На экране: «Гарант получил фиктивное нарушение».',vote:'Схемщики уводят подозрения на Ресурс. Голоса делятся 4 : 4.',verdict:'Ничья — выездной проверки нет. Схемщики выиграли время.'},
+  think:'Гарант получил −5 — Схемщики снова ответили <b>верно</b>. Верно в обоих кварталах: Баланс, Ресурс, Сальдо (и я). Сальдо я проверил — чисто. <b>Остаются Баланс и Ресурс.</b>'},
+ {topic:'Тема 3 · Сроки',text:'До какого числа сдаётся 300.00 за III квартал 2026 года?',opts:['15 ноября','16 ноября','25 ноября','15 октября'],c:1,ref:'п. 1 ст. 505, ст. 64 НК РК',
+  wrong:['R','K'],night:{mafia:'K',consult:'K',inspect:'B',audit:'D'},susp:{A:'B',K:'B',S:'B'},oral:{},
+  votes:{A:'B',B:'V',V:'B',G:'B',D:'B',R:'B',K:'B',S:'B'},voteOral:{},badge:'V',
+  say:{case:'Докладчик темы 3 читает кейс о сроке: 15 ноября — воскресенье.',answers:'Ошиблись Ресурс и Кредит. Аудитор (Ресурс) ошибся — вызова этим утром не будет.',night:'Схемщики снова ставят на Кредит. Консультант угадывает и защищает именно его. Инспектор проверяет Баланс.',
+   morning:'На экране: «Консультант сорвал схему против Кредита». Аудитор ошибся в кейсе — вызова нет.',vote:'Инспектор показывает «удостоверение»: «Я Инспектор КГД. Баланс — Схемщики». 7 голосов из 8 — за Баланс.',verdict:'Выездная проверка находит схему! Баланс — Схемщики: −20, всем остальным +10. Дальше — только знания.'},
+  think:'Схему сорвал Консультант — значит, Схемщики опять ответили <b>верно</b>. Ресурс в этом квартале ошибся — это не Схемщики. Остаётся Баланс, и моя проверка подтверждает: <b>СХЕМЩИКИ</b>. Пора показать удостоверение.'},
+ {topic:'Тема 4 · Ответственность',text:'Малый бизнес занизил налог на 1 500 000 ₸, налоговая нашла. Штраф по ст. 278 КоАП?',opts:['129 750 ₸','300 000 ₸','750 000 ₸','1 200 000 ₸'],c:1,ref:'ст. 278 КоАП РК',
+  wrong:['V'],night:{audit:'K'},susp:{},oral:{K:true},votes:null,
+  say:{case:'Докладчик темы 4 читает кейс о штрафе за занижение.',answers:'Ошибся только Вектор.',night:'Схемщики пойманы, их ночного действия больше нет. Аудитор вызывает Кредит.',morning:'Кредит отвечает устно: 20% от 1 500 000 = 300 000 ₸. +5.'}},
+ {topic:'Тема 5 · Комплексный расчёт',text:'Зарплата 400 000 ₸. Социальный налог за месяц?',opts:['24 000 ₸','21 600 ₸','21 120 ₸','20 040 ₸'],c:2,ref:'п. 2 ст. 556, п. 1 ст. 557 НК РК',
+  wrong:['B','D'],night:{audit:'B'},susp:{},oral:{B:false},votes:null,
+  say:{case:'Докладчик темы 5 читает расчётный кейс.',answers:'Ошиблись Баланс и Дебет.',night:'Аудитор вызывает Баланс на устный вопрос.',morning:'Баланс не может объяснить базу социального налога: −5, Аудитору +5.'}}
+];
+
+/* ---------- engine: builds every step from the rules ---------- */
+function build(){
+  const sc=Object.fromEntries(TEAMS.map(t=>[t.id,0])),right=Object.fromEntries(TEAMS.map(t=>[t.id,0]));
+  const rev={};let mafiaOn=true;const steps=[];
+  const push=o=>steps.push(Object.assign({score:{...sc},rev:{...rev},badge:{},delta:{},arrows:[],rings:{},events:[],sleep:false},o));
+  const add=(d,id,v)=>{sc[id]+=v;d[id]=(d[id]||0)+v};
+  push({key:'roles',qn:0,title:'Раздача ролей',text:'Главный ведущий раздаёт 8 команд тайные роли: 1 Схемщики, 1 Мимик, 1 Инспектор КГД, 1 Консультант, 1 Аудитор, 3 Добросовестных ТОО. Наблюдатель ночи видит все роли.'});
+  Q.forEach((q,qi)=>{
+    const n=qi+1,ok={};TEAMS.forEach(t=>ok[t.id]=!q.wrong.includes(t.id));
+    push({key:'case',qn:n,q,title:'Кейс',text:q.say.case});
+    let d={};TEAMS.forEach(t=>{if(ok[t.id]){add(d,t.id,10);right[t.id]++}});
+    push({key:'answers',qn:n,q,showAns:true,badge:{...ok},delta:d,title:'Ответы',text:q.say.answers});
+    /* night */
+    const N=q.night,arrows=[],M=roleId('mafia'),Cn=roleId('consultant'),I=roleId('inspector'),Au=roleId('auditor');
+    if(mafiaOn&&N.mafia)arrows.push({f:M,t:N.mafia,k:'mafia',lab:'схема',void:!ok[M]});
+    if(N.consult)arrows.push({f:Cn,t:N.consult,k:'consultant',lab:'защита',void:!ok[Cn]});
+    if(N.inspect)arrows.push({f:I,t:N.inspect,k:'inspector',lab:'проверка',void:!ok[I]});
+    if(N.audit)arrows.push({f:Au,t:N.audit,k:'auditor',lab:'вызов',void:!ok[Au]});
+    Object.entries(q.susp).forEach(([f,t])=>arrows.push({f,t,k:'honest',lab:'подозрение'}));
+    push({key:'night',qn:n,q,showAns:true,badge:{...ok},arrows,sleep:true,title:'Ночь',text:q.say.night});
+    /* morning */
+    d={};const ev=[],rings={};
+    if(mafiaOn&&N.mafia){const t=N.mafia;
+      if(ok[M]&&!ok[t]){ if(ok[Cn]&&N.consult===t){add(d,Cn,5);ev.push({c:'good',x:'Консультант сорвал схему против «'+T[t].name+'».'});rings[t]='var(--green)'}
+        else{add(d,M,5);add(d,t,-5);ev.push({c:'hit',x:'«'+T[t].name+'» получил фиктивное нарушение: −5.'});rings[t]='var(--bad)'} }
+      else ev.push({c:'',x:'Схема этой ночью не сработала.'});
+      ev.push({c:'priv',x:ok[M]?(ok[t]?'Цель Схемщиков ответила верно — схема не прошла.':'Схемщики целились в «'+T[t].name+'».'):'Схемщики ошиблись в кейсе — схема не запускалась.'});
+    }
+    if(N.inspect){ev.push({c:'priv',x:ok[I]?'Инспектор проверил «'+T[N.inspect].name+'»: '+(T[N.inspect].role==='mafia'?'СХЕМЩИКИ.':'не Схемщики.'):'Инспектор ошибся в кейсе — ордер не выдан.'})}
+    if(N.consult&&!ok[Cn])ev.push({c:'priv',x:'Консультант ошибся в кейсе — защита не работала.'});
+    if(N.audit){ if(ok[Au]){const t=N.audit,good=q.oral[t];rings[t]=rings[t]||'var(--warn)';
+        if(good){add(d,t,5);ev.push({c:'good',x:'Аудитор вызвал «'+T[t].name+'» на устный вопрос — ответ верный: +5.'})}
+        else{add(d,t,-5);add(d,Au,5);ev.push({c:'hit',x:'Аудитор вызвал «'+T[t].name+'» — устный ответ неверный: −5, Аудитору +5.'})}}
+      else ev.push({c:'',x:'Аудитор ошибся в кейсе — вызова этим утром нет.'}) }
+    const sc2={};Object.values(q.susp).forEach(t=>sc2[t]=(sc2[t]||0)+1);
+    if(Object.keys(sc2).length)ev.push({c:'',x:'Подозрения ТОО: '+Object.entries(sc2).sort((a,b)=>b[1]-a[1]).map(([t,c])=>T[t].name+' — '+c).join(', ')+'.'});
+    push({key:'morning',qn:n,q,showAns:true,reveal:true,badge:{...ok},delta:d,rings,events:ev,title:'Утро: разбор',text:q.say.morning,think:q.think});
+    /* vote */
+    if(mafiaOn&&q.votes){
+      const va=[],cnt={};Object.entries(q.votes).forEach(([f,t])=>{if(t!=='skip'){va.push({f,t,k:'vote',lab:''});cnt[t]=(cnt[t]||0)+1}});
+      push({key:'vote',qn:n,q,badge:{...ok},arrows:va,counts:cnt,title:'Голосование',text:q.say.vote,think:q.badge?'Показываю удостоверение: я Инспектор КГД. Баланс — Схемщики.':null,badgeShow:q.badge});
+      d={};const ev2=[];const top=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);const mim=roleId('mimic');
+      if(cnt[mim]){add(d,mim,cnt[mim]);ev2.push({c:'',x:'Мимик получает +1 за каждый голос против себя: +'+cnt[mim]+'.'})}
+      let rings2={};
+      if(!top.length||(top[1]&&top[1][1]===top[0][1]))ev2.push({c:'',x:'Ничья '+(top[0]?top[0][1]+' : '+top[1][1]:'')+' — выездной проверки нет.'});
+      else{const t=top[0][0];rev[t]=true;rings2[t]='var(--ink)';
+        if(T[t].role==='mafia'){add(d,t,-20);TEAMS.forEach(x=>{if(x.id!==t)add(d,x.id,10)});mafiaOn=false;ev2.push({c:'good',x:'Выездная проверка «'+T[t].name+'»: это СХЕМЩИКИ! −20, всем остальным +10.'})}
+        else if(T[t].role==='mimic'){add(d,t,10);ev2.push({c:'hit',x:'Выездная проверка «'+T[t].name+'»: это МИМИК. Он получает +10 — зал попался.'})}
+        else{const good=q.voteOral[t]!==false;if(!good)add(d,t,-5);ev2.push({c:'',x:'Выездная проверка «'+T[t].name+'»: '+ROLES[T[t].role].n+'. Устный ответ '+(good?'верный — потерь нет.':'неверный: −5.')})}}
+      push({key:'verdict',qn:n,q,badge:{...ok},delta:d,rings:rings2,events:ev2,title:'Итог проверки',text:q.say.verdict});
+    }
+  });
+  TEAMS.forEach(t=>rev[t.id]=true);
+  push({key:'final',qn:6,final:true,right,title:'Финал: разоблачение',text:'Наблюдатель ночи рассказывает, кто был кем и что делал. Протоколист показывает итоговую таблицу.'});
+  return steps;
+}
+const STEPS=build();
+
+/* ---------- drawing ---------- */
+const NS='http://www.w3.org/2000/svg';
+const el=(tag,attrs,parent)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent&&parent.appendChild(e);return e};
+const CX=450,CY=290,RX=330,RY=205;
+const POS={};TEAMS.forEach((t,i)=>{const a=-Math.PI/2+i*2*Math.PI/TEAMS.length;POS[t.id]={x:CX+RX*Math.cos(a),y:CY+RY*Math.sin(a)}});
+function personSVG(color,w,h){return '<svg viewBox="-30 -40 60 70" width="'+w+'" height="'+h+'" aria-hidden="true"><circle cx="0" cy="-22" r="13" fill="'+color+'"/><path d="M-21 24 Q-21 -4 0 -4 Q21 -4 21 24 Z" fill="'+color+'"/></svg>'}
+const ARROW_C={mafia:'#2a2f37',consultant:'#14875a',inspector:'#1e6bb0',auditor:'#b26b00',honest:'#8aa19e',vote:'#c0392b'};
+let view='host',cur=0,timer=null;
+const svg=document.getElementById('board');
+function defs(){const d=el('defs',{},svg);Object.entries(ARROW_C).forEach(([k,c])=>{const m=el('marker',{id:'m-'+k,viewBox:'0 0 10 10',refX:'8',refY:'5',markerWidth:'6',markerHeight:'6',orient:'auto-start-reverse'},d);el('path',{d:'M0 0 L10 5 L0 10 z',fill:c},m)})}
+function draw(){
+  const s=STEPS[cur];svg.innerHTML='';defs();
+  el('ellipse',{cx:CX,cy:CY,rx:225,ry:118,fill:'#e9f3ef',stroke:'#d3e4df','stroke-width':2},svg);
+  const ctr=el('g',{},svg);el('rect',{x:CX-130,y:CY-34,width:260,height:s.q?88:66,rx:14,fill:'#ffffff',opacity:.88},ctr);
+  const qt=el('text',{x:CX,y:CY-6,'text-anchor':'middle',class:'ctr-q'},ctr);qt.textContent=s.final?'Финал':s.qn?'Квартал '+s.qn+' из 5':'Начало игры';
+  const pt=el('text',{x:CX,y:CY+20,'text-anchor':'middle',class:'ctr-p'},ctr);pt.textContent=s.title.toUpperCase();
+  if(s.q){const tp=el('text',{x:CX,y:CY+44,'text-anchor':'middle',class:'ctr-p'},ctr);tp.textContent=s.q.topic}
+  /* arrows (night: only host view) */
+  const showArrows=s.key==='vote'||(view==='host'&&s.arrows.length);
+  if(showArrows){const g=el('g',{},svg);
+    s.arrows.forEach((a,i)=>{const p=POS[a.f],q=POS[a.t];let dx=q.x-p.x,dy=q.y-p.y;const L=Math.hypot(dx,dy);const ux=dx/L,uy=dy/L;
+      const x1=p.x+ux*42,y1=p.y+uy*42,x2=q.x-ux*48,y2=q.y-uy*48;const bend=a.k==='vote'?18:32;/* same sign: opposite arrows curve to opposite sides */
+      const mx=(x1+x2)/2-uy*bend,my=(y1+y2)/2+ux*bend;
+      el('path',{d:'M'+x1+' '+y1+' Q'+mx+' '+my+' '+x2+' '+y2,class:'arrow'+(a.void?' void':''),stroke:ARROW_C[a.k],'marker-end':'url(#m-'+a.k+')','stroke-width':a.k==='vote'||a.k==='honest'?2.2:3.2},g);
+      if(a.lab){const lt=el('text',{x:mx,y:my-4,'text-anchor':'middle',class:'alabel',fill:ARROW_C[a.k]},g);lt.textContent=a.lab+(a.void?' ✗':'')}})}
+  svg.appendChild(ctr);
+  /* people */
+  TEAMS.forEach(t=>{const p=POS[t.id];const known=view==='host'||s.rev[t.id];const color=known?ROLES[t.role].hex:'#9db3ae';
+    const g=el('g',{transform:'translate('+p.x+' '+p.y+')',class:'person'+(s.sleep&&view==='public'?' sleep':'')},svg);
+    if(s.rings&&s.rings[t.id])el('circle',{cx:0,cy:-6,r:44,class:'ring',stroke:s.rings[t.id]},g);
+    if(s.badgeShow===t.id)el('circle',{cx:0,cy:-6,r:46,fill:'none',stroke:'#1e6bb0','stroke-width':4},g);
+    el('circle',{cx:0,cy:-24,r:14,fill:color,class:'head'},g);
+    el('path',{d:'M-23 24 Q-23 -6 0 -6 Q23 -6 23 24 Z',fill:color,class:'body'},g);
+    if(s.sleep&&view==='public'){const z=el('text',{x:16,y:-36,class:'trole',fill:'#56706f'},g);z.textContent='z z'}
+    const nm=el('text',{x:0,y:44,'text-anchor':'middle',class:'tname'},g);nm.textContent=t.name;
+    if(known){const rl=el('text',{x:0,y:60,'text-anchor':'middle',class:'trole',fill:ROLES[t.role].hex},g);rl.textContent=ROLES[t.role].n}
+    const scv=s.score[t.id];const pill=el('g',{transform:'translate(0 '+(known?78:64)+')'},g);
+    el('rect',{x:-26,y:-11,width:52,height:20,rx:10,fill:'#10302f'},pill);const st=el('text',{x:0,y:4,'text-anchor':'middle',class:'tscore',fill:'#fff'},pill);st.textContent=scv;
+    if(s.badge&&t.id in s.badge&&s.showAns!==false&&(s.showAns||s.key==='vote'||s.key==='verdict')){const ok=s.badge[t.id];
+      el('circle',{cx:24,cy:-36,r:11,fill:ok?'#14875a':'#c0392b'},g);const b=el('text',{x:24,y:-32,'text-anchor':'middle',fill:'#fff','font-size':'13','font-weight':'700'},g);b.textContent=ok?'✓':'✗'}
+    const dv=s.delta[t.id];if(dv){const dt=el('text',{x:-30,y:-38,'text-anchor':'end',class:'tdelta',fill:dv>0?'#0f6b47':'#c0392b'},g);dt.textContent=(dv>0?'+':'')+dv}
+    if(s.counts&&s.counts[t.id]){const vc=el('text',{x:-30,y:4,'text-anchor':'end',class:'tdelta',fill:'#c0392b'},g);vc.textContent=s.counts[t.id]+' гол.'}
+  });
+}
+function legend(){const L=document.getElementById('legend');L.innerHTML=[['mafia','схема'],['consultant','защита'],['inspector','проверка'],['auditor','вызов Аудитора'],['honest','подозрение ТОО'],['vote','голос']].map(([k,t])=>'<span><b style="background:'+ARROW_C[k]+'"></b>'+t+'</span>').join('')+'<span>пунктир — действие не сработало (ошибка в кейсе)</span>'}
+function panel(){
+  const s=STEPS[cur],P=document.getElementById('panel');let h='';
+  h+='<div class="phase"><div class="label">'+(s.qn&&!s.final?'Квартал '+s.qn+' · '+s.q.topic:s.final?'После 5 кварталов':'Перед игрой')+'</div><h3>'+s.title+'</h3><p>'+s.text+'</p></div>';
+  const on=new Set(HOST_ON[s.key]||[]);if(s.qn>=1&&s.qn<=5&&(s.key==='case'||s.key==='morning'))on.add('m');
+  h+='<div><div class="label" style="margin-bottom:6px">Ведущие сейчас</div><div class="hosts">'+HOSTS.map(x=>{const cm=(s.qn===x.n&&on.has('m'));return '<span class="host'+(on.has(x.n)||cm?' on':'')+'"><i>'+x.n+'</i>'+(cm?'Кейс-мастер (тема '+x.n+')':x.duty)+'</span>'}).join('')+'</div></div>';
+  if(s.q&&!s.final){h+='<div class="case"><div class="label">'+s.q.topic+'</div><div class="qt">'+s.q.text+'</div><ol type="A">'+s.q.opts.map((o,i)=>'<li'+(s.reveal&&i===s.q.c?' class="ok"':'')+'>'+o+(s.reveal&&i===s.q.c?' ✓':'')+'</li>').join('')+'</ol>'+(s.reveal?'<span class="ref">'+s.q.ref+'</span>':'')+'</div>'}
+  const ev=s.events.filter(e=>view==='host'||e.c!=='priv');
+  if(ev.length)h+='<div class="evs">'+ev.map(e=>'<div class="ev '+e.c+'">'+e.x+'</div>').join('')+'</div>';
+  if(s.key==='night'&&view==='public')h+='<div class="ev">Ночь: команды тайно делают ходы. Зал ходов не видит — переключитесь на «Глазами ведущих».</div>';
+  if(s.think&&(view==='host'||s.key==='vote'))h+='<div class="think"><b>Рассуждение Инспектора (Вектор):</b> '+s.think+'</div>';
+  if(s.final){const rows=TEAMS.slice().sort((a,b)=>s.score[b.id]-s.score[a.id]);
+    h+='<div class="tbl"><table><thead><tr><th>#</th><th>Команда</th><th>Роль</th><th class="num">Верных</th><th class="num">Очки</th></tr></thead><tbody>'+rows.map((t,i)=>'<tr><td>'+(i+1)+'</td><td><b>'+t.name+'</b></td><td style="color:'+ROLES[t.role].hex+'">'+ROLES[t.role].n+'</td><td class="num">'+s.right[t.id]+' / 5</td><td class="num"><b>'+s.score[t.id]+'</b></td></tr>').join('')+'</tbody></table></div>';
+    h+='<div class="note b"><b class="k">ВЫВОД</b>Побеждает «'+rows[0].name+'» — '+(rows[0].role==='honest'?'обычная честная команда':ROLES[rows[0].role].n)+' с '+s.right[rows[0].id]+' верными ответами из 5. Схемщики, пойманные в 3 квартале, — на последнем месте. Знания решают исход, роли добавляют интригу.</div>'}
+  const mx=Math.max(1,...TEAMS.map(t=>s.score[t.id]));
+  h+='<div class="card score"><div class="label" style="margin-bottom:4px">Счёт</div>'+TEAMS.map(t=>{const known=view==='host'||s.rev[t.id];const c=known?ROLES[t.role].hex:'#9db3ae';const v=s.score[t.id];const dv=s.delta[t.id];
+    return '<div class="srow"><span>'+t.name+'</span><span class="bar"><i style="width:'+Math.max(0,v)/mx*100+'%;background:'+c+'"></i></span><span class="d '+(dv>0?'pos':'neg')+'">'+(dv?(dv>0?'+':'')+dv:'')+'</span><span class="v">'+v+'</span></div>'}).join('')+'</div>';
+  P.innerHTML=h;
+}
+function timeline(){const tl=document.getElementById('timeline');tl.innerHTML='';
+  STEPS.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.title=(s.qn&&!s.final?'Кв. '+s.qn+' · ':'')+s.title;b.setAttribute('aria-label',b.title);
+    if(i>0&&s.qn!==STEPS[i-1].qn)b.classList.add('q');if(i<cur)b.classList.add('done');b.setAttribute('aria-current',String(i===cur));b.onclick=()=>{stop();go(i)};tl.appendChild(b)})}
+function go(i){cur=Math.max(0,Math.min(STEPS.length-1,i));draw();panel();timeline();
+  document.getElementById('stepno').textContent='Шаг '+(cur+1)+' из '+STEPS.length;
+  document.getElementById('prev').disabled=cur===0;document.getElementById('next').disabled=cur===STEPS.length-1}
+function stop(){clearInterval(timer);timer=null;document.getElementById('play').textContent='▶ Автоигра'}
+document.getElementById('prev').onclick=()=>{stop();go(cur-1)};
+document.getElementById('next').onclick=()=>{stop();go(cur+1)};
+document.getElementById('play').onclick=()=>{if(timer){stop();return}if(cur===STEPS.length-1)go(0);document.getElementById('play').textContent='❚❚ Пауза';timer=setInterval(()=>{if(cur>=STEPS.length-1){stop();return}go(cur+1)},2600)};
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{view=b.dataset.v;document.querySelectorAll('.seg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));go(cur)});
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){stop();go(cur+1)}if(e.key==='ArrowLeft'){stop();go(cur-1)}});
+
+/* static cards */
+document.getElementById('roleCards').innerHTML=Object.entries(ROLES).map(([k,r])=>'<div class="card role">'+personSVG(r.hex,54,62)+'<div><div class="who">'+r.count+'</div><h3 style="color:'+r.hex+'">'+r.n+'</h3><p style="font-size:.93rem;margin-top:4px">'+r.d+'</p><ul>'+r.li.map(x=>'<li>'+x+'</li>').join('')+'</ul></div></div>').join('');
+document.getElementById('presCards').innerHTML=HOSTS.map(x=>'<div class="card pcard">'+personSVG('#10302f',46,54)+'<div class="label">Ведущий '+x.n+' · тема '+x.n+'</div><h4>'+x.duty+'</h4><p>'+x.d+'</p><p style="color:var(--green-2);font-weight:600">+ кейс-мастер в квартале '+x.n+'</p></div>').join('');
+legend();go(0);
+})();
+</script>
+</body>
+</html>

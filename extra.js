@@ -315,11 +315,6 @@ window.K8X = (function () {
       /* exit-ticket */
       const ex = (d.results || []).map(r => Object.assign({}, r, { awaySec: r.away_sec != null ? r.away_sec : r.awaySec })); C.results().forEach(r => { if (!ex.some(x => x.no === r.no)) ex.push(Object.assign({ local: true }, r)); });
       box.append(resTable('Exit-ticket', ex, ['№', 'ФИО', 'Вар.', 'Баллы', 'Переходы', 'Код'], r => [r.no, esc(r.name) + (r.local ? ' <span style="color:var(--warn)">· только на этом устройстве</span>' : ''), r.v, r.score + '/' + r.max, r.leaves, '<span class="mono">' + esc(r.code) + '</span>'], r => [r.no, r.name, r.v, r.score, r.leaves, r.awaySec, r.code].join(';'), 'results'));
-      /* проверка кода */
-      const cf = h('<div class="sheet adm-card"><h3>Проверка кода Exit-ticket</h3><div class="fields"><label class="f">Код результата<input id="codeIn" placeholder="N12-V1-S18-P0-T14-XXXXX"></label></div><div class="reveal">Вставьте код со страницы результата.</div></div>');
-      const co = cf.querySelector('.reveal');
-      cf.querySelector('input').oninput = e => { const p = C.parseCode(e.target.value); if (!p) { co.textContent = 'Код не распознан.'; return; } const s = C.NAMES.find(x => x.no === p.no); co.innerHTML = (p.ok ? '<b style="color:var(--green-2)">Код подлинный.</b> ' : '<b style="color:var(--bad)">Код изменён или неверен.</b> ') + esc(s ? s.name : '№' + p.no) + ' · вариант ' + p.v + ' · ' + p.score + ' / ' + C.MAXPTS + ' · переходов: ' + p.leaves + ' · ' + p.mins + ' мин.'; };
-      box.append(cf);
     }
     function resTable(title, rows, head, cells, csvRow, table) {
       rows.sort((a, b) => a.no - b.no);

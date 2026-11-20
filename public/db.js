@@ -46,6 +46,29 @@
       if (!sb) return;
       const { error } = await sb.rpc('admin_clear', { p: pin, t: table }); if (error) fail(error);
     },
+    /* игра: открытое состояние, телефоны команд, секретная часть ведущих */
+    async rpc(name, args) {
+      if (!sb) throw new Error('Игра работает только с общей базой Supabase (public/config.js).');
+      const { data, error } = await sb.rpc(name, args); if (error) fail(error); return data;
+    },
+    async gameGet() {
+      if (!sb) return {};
+      const { data, error } = await sb.from('game').select('data').eq('id', 1).maybeSingle(); if (error) fail(error);
+      return data ? data.data || {} : {};
+    },
+    watchGame(cb) {
+      if (!sb) return () => { };
+      const ch = sb.channel('game-' + Math.random().toString(36).slice(2))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'game' }, p => { if (p.new && p.new.data) cb(p.new.data); })
+        .subscribe();
+      return () => { try { sb.removeChannel(ch); } catch (e) { } };
+    },
+    teamView(code) { return this.rpc('team_view', { c: code }); },
+    teamSubmit(code, rnd, ans, argument, tgt) { return this.rpc('team_submit', { c: code, rnd, ans, argument, tgt: tgt || '' }); },
+    teamExtra(code, rnd, ans, argument) { return this.rpc('team_extra', { c: code, rnd, ans, argument }); },
+    adminGame(pin) { return this.rpc('admin_game', { p: pin }); },
+    adminGameSet(pin, pub, sec) { return this.rpc('admin_game_set', { p: pin, pub, sec }); },
+    adminGameReset(pin) { return this.rpc('admin_game_reset', { p: pin }); },
     /* экран проектора */
     async setScreen(pin, data) {
       LS.set('k8_screen', data); if (bc) bc.postMessage(data);

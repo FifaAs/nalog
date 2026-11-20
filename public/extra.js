@@ -134,6 +134,14 @@ window.K8X = (function () {
     let data = {}, tick = null;
     const draw = () => {
       const body = w.querySelector('#scrBody'), it = itemOf(data);
+      if (data.kind === 'scores') {
+        w.querySelector('#scrLabel').textContent = 'Налоговая мафия · итоги игры'; body.innerHTML = '';
+        body.append(h('<h1 class="scr-q">Итоговая таблица</h1>'));
+        const R = window.K8G ? window.K8G.ROLE : {};
+        const t = h('<div class="scr-scores"></div>');
+        (data.rows || []).forEach((x, i) => t.append(h('<div class="scr-srow' + (i === 0 ? ' first' : '') + '"><span class="n">' + (i + 1) + '</span><span class="nm">' + esc(x.name) + '</span><span class="rl">' + esc(R[x.role] ? R[x.role].n : '') + '</span><b>' + x.total + '</b></div>')));
+        body.append(t); return;
+      }
       w.querySelector('#scrLabel').textContent = (data.label ? data.label + ' · ' : '') + (it ? KIND[data.kind] : 'Налоговая мафия');
       body.innerHTML = '';
       if (!it) { body.append(h('<div class="scr-idle"><div class="scr-logo">8</div><h1>Налоговая мафия</h1><p>Ждём следующий кейс…</p></div>')); return; }
@@ -273,116 +281,13 @@ window.K8X = (function () {
     }
     DB().getScreen().then(d => { scrState = d || {}; if (tab === 'screen' && game) draw(); }).catch(() => { });
 
-    /* ---------- ход игры ---------- */
+    /* ---------- ход игры (телефоны команд + секретная панель) ---------- */
+    let gameStop = null;
     function drawGame() {
-      const S = score(game), T = game.teams, qi = game.cur, q = game.q[qi], inf = S.info[qi];
-      const name = id => { const t = T.find(x => x.id === id); return t ? t.name : '—'; };
-
-      /* команды и роли */
-      const setup = h('<details class="sheet adm-card"' + (T.length ? '' : ' open') + '><summary><b>Команды и роли</b> · ' + T.length + ' команд</summary></details>');
-      const form = h('<div class="fields" style="margin-top:12px"><label class="f">Название команды<input id="tName" maxlength="40" placeholder="ТОО «Дебет»"></label><label class="f">Участники (через запятую)<input id="tMem" placeholder="Фамилия Имя, Фамилия Имя"></label></div>');
-      const add = h('<button type="button" class="btn" style="justify-self:start;margin-top:10px">Добавить команду</button>');
-      add.onclick = () => {
-        const n = form.querySelector('#tName').value.trim(), m = form.querySelector('#tMem').value.split(',').map(x => x.trim()).filter(Boolean);
-        if (n.length < 2) return fail(new Error('Введите название команды.'));
-        if (T.some(t => t.name.toLowerCase() === n.toLowerCase())) return fail(new Error('Такая команда уже есть.'));
-        T.push({ id: Math.random().toString(36).slice(2, 8), name: n, members: m, role: null }); changed();
-      };
-      setup.append(form, add);
-      if (T.length) {
-        const tb = h('<div class="tbl" style="margin-top:12px"><table class="sm"><thead><tr><th>Команда</th><th>Участники</th><th>Роль</th><th></th></tr></thead><tbody></tbody></table></div>');
-        T.forEach(t => {
-          const tr = h('<tr><td><b>' + esc(t.name) + '</b></td><td style="font-size:.88rem">' + esc((t.members || []).join(', ')) + '</td><td></td><td></td></tr>');
-          const s = h('<select><option value="">— роль —</option>' + Object.keys(ROLE).map(r => '<option value="' + r + '"' + (t.role === r ? ' selected' : '') + '>' + ROLE[r] + '</option>').join('') + '</select>');
-          s.onchange = () => { t.role = s.value || null; changed(); }; tr.children[2].append(s);
-          const del = h('<button type="button" class="btn ghost" style="padding:5px 10px;font-size:.85rem">Удалить</button>');
-          del.onclick = () => dialog('<h3>Удалить «' + esc(t.name) + '»?</h3>', [{ t: 'Отмена', cls: 'ghost' }, { t: 'Удалить', on: () => { game.teams = T.filter(x => x !== t); changed(); } }]);
-          tr.children[3].append(del); tb.querySelector('tbody').append(tr);
-        });
-        const rnd = h('<button type="button" class="btn blue" style="justify-self:start;margin-top:10px">Раздать роли случайно</button>');
-        rnd.onclick = () => { const r = rolesFor(T.length).sort(() => Math.random() - .5); T.forEach((t, i) => { t.role = r[i]; }); changed(); };
-        setup.append(tb, rnd, h('<p class="g-muted" style="font-size:.88rem;margin-top:6px">Правило: 1 Схемщики, 1 Консультант, 1 Мимик (при 4+ командах), остальные — Аудиторы.</p>'));
-      }
-      body.append(setup);
-      if (T.length < 3 || T.some(t => !t.role)) { body.append(h('<div class="reveal">Добавьте минимум 3 команды и раздайте роли — тогда появится таблица кварталов.</div>')); return; }
-
-      /* выбор квартала */
-      const qt = h('<div class="adm-qtabs"></div>');
-      for (let i = 0; i < QN; i++) { const b = h('<button type="button" class="adm-qtab" aria-pressed="' + (i === qi) + '">Квартал ' + (i + 1) + '<small>Тема ' + (i + 1) + '</small></button>'); b.onclick = () => { game.cur = i; changed(); }; qt.append(b); }
-      body.append(qt);
-
-      /* сводка квартала */
-      const correct = T.filter(t => q.ans[t.id] === true).length, marked = T.filter(t => q.ans[t.id] != null).length;
-      const sum = h('<div class="adm-sum"><div><span class="label">Ответы</span><b>' + marked + ' / ' + T.length + '</b><small>отмечено</small></div><div><span class="label">Верно</span><b>' + correct + '</b><small>' + plural(correct, 'команда сходит', 'команды сходят', 'команд сходят') + '</small></div><div><span class="label">Схема</span><b>' + ({ victim: 'жертва', trap: 'Мимик', saved: 'спасена', wrong: 'ошибка', none: '—' }[inf.scheme]) + '</b><small>' + (inf.target ? '→ ' + esc(name(inf.target)) : 'ход не выбран') + '</small></div><div><span class="label">Вопросы Аудиторов</span><b>' + Object.keys(inf.audits).length + '</b><small>' + plural(Object.keys(inf.audits).length, 'команда', 'команды', 'команд') + '</small></div></div>');
-      body.append(sum);
-
-      /* кейс квартала */
-      const cs = h('<div class="sheet adm-card"><h3>Кейс квартала ' + (qi + 1) + '</h3></div>');
-      const sel = h('<select><option value="">— выберите кейс —</option>' + BANK().main.map((c, i) => '<option value="' + i + '"' + (q.caseIdx === i ? ' selected' : '') + '>' + (i + 1) + '. ' + esc(c.topic) + ' — ' + esc(c.text.slice(0, 70)) + '…</option>').join('') + '</select>');
-      sel.onchange = () => { q.caseIdx = sel.value === '' ? null : +sel.value; changed(); };
-      cs.append(sel);
-      if (q.caseIdx != null) {
-        const c = BANK().main[q.caseIdx];
-        cs.append(h('<p style="margin-top:8px">' + esc(c.text) + ' <b>Ответ: ' + L[c.c] + ') ' + esc(c.opts[c.c]) + '</b></p>'));
-        const r = h('<div class="adm-row"></div>');
-        const s1 = h('<button type="button" class="btn">Вывести кейс на экран + 2 мин</button>'); s1.onclick = () => show({ kind: 'main', idx: q.caseIdx, reveal: false, ends: Date.now() + 120000, label: 'Квартал ' + (qi + 1) });
-        const s2 = h('<button type="button" class="btn ghost">Показать ответ на экране</button>'); s2.onclick = () => show({ kind: 'main', idx: q.caseIdx, reveal: true, ends: 0, label: 'Квартал ' + (qi + 1) });
-        r.append(s1, s2); cs.append(r);
-      }
-      body.append(cs);
-
-      /* ответы и ходы */
-      const tbl = h('<div class="tbl"><table class="sm adm-t"><thead><tr><th>Команда</th><th>Ответ на кейс</th><th>Тайный ход</th></tr></thead><tbody></tbody></table></div>');
-      T.forEach(t => {
-        const tr = h('<tr><td><b>' + esc(t.name) + '</b><br><span class="rchip ' + ROLE_CLS[t.role] + '">' + ROLE[t.role] + '</span></td><td></td><td></td></tr>');
-        const yn = h('<div class="yn"></div>');
-        [[true, '✓ Верно'], [false, '✗ Неверно']].forEach(([v, lab]) => { const b = h('<button type="button" class="ynb ' + (v ? 'y' : 'n') + '" aria-pressed="' + (q.ans[t.id] === v) + '">' + lab + '</button>'); b.onclick = () => { if (q.ans[t.id] === v) delete q.ans[t.id]; else q.ans[t.id] = v; changed(); }; yn.append(b); });
-        tr.children[1].append(yn);
-        if (t.role === 'mimic') tr.children[2].append(h('<span class="g-muted">хода нет — ждёт Схемщиков</span>'));
-        else {
-          const verb = { mafia: 'Жертва', consultant: 'Защищает', auditor: 'Вопрос для' }[t.role];
-          const opts = T.filter(x => x.id !== t.id || t.role === 'consultant');
-          const s = h('<label class="mv"><span>' + verb + '</span><select><option value="">—</option>' + opts.map(x => '<option value="' + x.id + '"' + (q.mv[t.id] === x.id ? ' selected' : '') + '>' + esc(x.name) + '</option>').join('') + '</select></label>');
-          s.querySelector('select').onchange = e => { if (e.target.value) q.mv[t.id] = e.target.value; else delete q.mv[t.id]; changed(); };
-          tr.children[2].append(s);
-          if (q.ans[t.id] === false && q.mv[t.id]) tr.children[2].append(h('<div class="mv-off">ход сгорел — ответ неверный</div>'));
-          if (t.role === 'consultant' && qi > 0 && q.mv[t.id] && game.q[qi - 1].mv[t.id] === q.mv[t.id]) tr.children[2].append(h('<div class="mv-off">нельзя защищать одну команду два квартала подряд</div>'));
-        }
-        tbl.querySelector('tbody').append(tr);
-      });
-      body.append(tbl);
-
-      /* события дня */
-      const day = h('<div class="sheet adm-card"><h3>День: дополнительный кейс и вопросы</h3></div>');
-      const sch = { none: 'Схемщики ещё не отмечены или не выбрали жертву.', wrong: 'Схемщики ошиблись в кейсе — схема не сработала.', trap: 'Схемщики выбрали Мимика («' + esc(name(inf.target)) + '»): Мимику +15, схема сгорела.', saved: 'Консультант защитил «' + esc(name(inf.target)) + '»: схема сорвана, Консультанту +5.', victim: 'Жертва схемы — «' + esc(name(inf.victim)) + '». Она решает дополнительный кейс.' }[inf.scheme];
-      day.append(h('<div class="ev ' + (inf.scheme === 'victim' ? 'hit' : inf.scheme === 'trap' || inf.scheme === 'saved' ? 'good' : '') + '">' + sch + '</div>'));
-      if (inf.victim) {
-        const r = h('<div class="adm-row"></div>');
-        const ex = h('<button type="button" class="btn ghost">Вывести доп. кейс ' + (qi + 1) + ' на экран</button>'); ex.onclick = () => show({ kind: 'extra', idx: qi % BANK().extra.length, reveal: false, ends: Date.now() + 60000, label: 'Доп. кейс для «' + name(inf.victim) + '»' });
-        r.append(h('<span>Доп. кейс решён?</span>'), ynPair(q.extra, v => { q.extra = v; changed(); }), ex);
-        day.append(r);
-      }
-      const au = Object.entries(inf.audits);
-      if (!au.length) day.append(h('<p class="g-muted">Вопросов Аудиторов в этом квартале нет (нужен верный ответ и выбранная команда).</p>'));
-      au.forEach(([tid, auds], k) => {
-        const r = h('<div class="adm-row"><span><b>Вопрос для «' + esc(name(tid)) + '»</b> <span class="g-muted">— от ' + auds.map(a => esc(name(a))).join(', ') + '</span></span></div>');
-        const oi = (qi * 2 + k) % BANK().oral.length;
-        const ob = h('<button type="button" class="btn ghost">Вывести вопрос на экран</button>'); ob.onclick = () => show({ kind: 'oral', idx: oi, reveal: false, ends: 0, label: 'Вопрос для «' + name(tid) + '»' });
-        r.append(ynPair(q.aud[tid], v => { if (v == null) delete q.aud[tid]; else q.aud[tid] = v; changed(); }), ob);
-        day.append(r);
-      });
-      body.append(day);
-
-      /* таблица очков */
-      const rows = T.slice().sort((a, b) => S.total(b.id) - S.total(a.id));
-      const st = h('<div class="sheet adm-card"><h3>Счёт</h3><div class="tbl"><table class="sm"><thead><tr><th>#</th><th>Команда</th><th>Роль</th>' + Array.from({ length: QN }, (_, i) => '<th class="n-right">Кв. ' + (i + 1) + '</th>').join('') + '<th class="n-right">Итого</th></tr></thead><tbody></tbody></table></div></div>');
-      rows.forEach((t, i) => st.querySelector('tbody').append(h('<tr><td>' + (i + 1) + '</td><td><b>' + esc(t.name) + '</b></td><td><span class="rchip ' + ROLE_CLS[t.role] + '">' + ROLE[t.role] + '</span></td>' + S.pts[t.id].map((p, j) => '<td class="n-right' + (j === qi ? ' cur' : '') + '">' + (p > 0 ? '+' : '') + p + '</td>').join('') + '<td class="n-right"><b>' + S.total(t.id) + '</b></td></tr>')));
-      const csv = 'Место;Команда;Участники;Роль;' + Array.from({ length: QN }, (_, i) => 'Кв. ' + (i + 1)).join(';') + ';Итого\n' + rows.map((t, i) => [i + 1, t.name, (t.members || []).join(', '), ROLE[t.role]].concat(S.pts[t.id], [S.total(t.id)]).join(';')).join('\n');
-      const cp = h('<button type="button" class="btn ghost" style="justify-self:start">Скопировать счёт для Excel</button>'); cp.onclick = () => copyText(cp, csv, st);
-      const rs = h('<button type="button" class="btn ghost" style="justify-self:start;color:var(--bad)">Начать игру заново</button>');
-      rs.onclick = () => dialog('<h3>Начать заново?</h3><p>Все отметки кварталов будут удалены. Команды и роли останутся.</p>', [{ t: 'Отмена', cls: 'ghost' }, { t: 'Очистить', on: () => { game.q = Array.from({ length: QN }, blankQ); game.cur = 0; changed(); } }]);
-      st.append(cp, rs);
-      body.append(st);
+      if (gameStop) { gameStop(); gameStop = null; }
+      const box = h('<div style="display:grid;gap:16px"></div>'); body.append(box);
+      if (!window.K8G) { box.append(h('<p class="g-muted">Модуль игры не загрузился.</p>')); return; }
+      gameStop = window.K8G.admin(box, pin, show, () => !stopped && tab === 'game' && box.isConnected, C);
     }
     function ynPair(val, set) {
       const yn = h('<div class="yn"></div>');
@@ -423,7 +328,7 @@ window.K8X = (function () {
       const row = h('<div class="adm-row"></div>'); row.append(cp, cl);
       card.append(t, row); return card;
     }
-    return () => { stopped = true; clearTimeout(saveT); };
+    return () => { stopped = true; clearTimeout(saveT); if (gameStop) gameStop(); };
   }
 
   return {

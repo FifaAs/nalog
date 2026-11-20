@@ -21,29 +21,26 @@ supabase/schema.sql  база данных — выполнить один ра�
 server.js          локальный сервер для проверки на своём компьютере (не обязателен)
 ```
 
-## Шаг 1. База данных в Supabase (бесплатно)
-1. Зарегистрируйтесь на https://supabase.com и создайте проект (тариф Free).
-2. Откройте **SQL Editor → New query**, вставьте весь файл `supabase/schema.sql` и нажмите **Run**.
-3. Смените PIN ведущих (по умолчанию `0808`) там же в SQL Editor:
-   ```sql
-   update public.app_secret set pin = 'ваш PIN' where id = 1;
-   ```
-4. Откройте **Project Settings → API** и скопируйте **Project URL** и ключ **anon public**.
-5. Вставьте их в `public/config.js`:
-   ```js
-   window.K8_CONFIG = { supabaseUrl: 'https://xxxx.supabase.co', supabaseKey: 'eyJ...' };
-   ```
-   Ключ `anon` публичный — так и задумано. Студенты могут только добавить свой результат;
-   читать результаты, менять ход игры и экран можно только с PIN.
+## Где всё работает
+- **Сайт:** https://fifaas.github.io/nalog/ — GitHub Pages, ветка `gh-pages` (содержимое папки `public`).
+- **База:** Supabase, проект `nalog` (организация FifaAs). Схема — `supabase/schema.sql`, уже выполнена.
+- **PIN ведущих** хранится в базе. Сменить: Supabase → SQL Editor →
+  ```sql
+  update public.app_secret set pin = 'новый PIN' where id = 1;
+  ```
+- Бесплатный проект Supabase засыпает после 7 дней без активности — перед занятием зайдите
+  в панель Supabase и при необходимости нажмите **Restore project**.
 
-## Шаг 2. Выложить сайт (бесплатно)
-Supabase хранит данные, но сами страницы не хостит. Самый простой бесплатный вариант:
-
-**Netlify Drop:** откройте https://app.netlify.com/drop и перетащите туда папку `public`.
-Через минуту будет ссылка вида `https://имя.netlify.app` — её и раздавайте.
-После изменений в файлах перетащите папку ещё раз.
-
-Другие варианты: GitHub Pages (папка `public` в репозитории) или Cloudflare Pages.
+## Как выложить изменения
+После правок в папке `public`:
+```
+git add -A
+git commit -m "что изменилось"
+git push origin main
+git branch -f gh-pages $(git subtree split --prefix public)
+git push origin gh-pages
+```
+Через 1–2 минуты изменения появятся на сайте.
 
 ## Как проверить на своём компьютере
 ```

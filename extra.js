@@ -134,6 +134,13 @@ window.K8X = (function () {
     let data = {}, tick = null;
     const draw = () => {
       const body = w.querySelector('#scrBody'), it = itemOf(data);
+      if (data.kind === 'join') {
+        w.querySelector('#scrLabel').textContent = 'Налоговая мафия · регистрация команд'; body.innerHTML = '';
+        const j = h('<div class="scr-join"><div class="scr-qr" id="scrQr"></div><div><h1 class="scr-q">Зарегистрируйте команду</h1><p class="scr-steps">1. Откройте ссылку на одном телефоне команды<br>2. Введите название и отметьте участников<br>3. Тайно посмотрите роль</p><p class="scr-url">' + esc(data.url || '') + '</p></div></div>');
+        body.append(j);
+        if (window.QRCode) { try { new window.QRCode(j.querySelector('#scrQr'), { text: data.url || '', width: 280, height: 280, correctLevel: window.QRCode.CorrectLevel.M }); } catch (e) { } }
+        return;
+      }
       if (data.kind === 'scores') {
         w.querySelector('#scrLabel').textContent = 'Налоговая мафия · итоги игры'; body.innerHTML = '';
         body.append(h('<h1 class="scr-q">Итоговая таблица</h1>'));

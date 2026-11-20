@@ -91,16 +91,63 @@ window.K8G = (function () {
     let code = id.startsWith('team-') ? id.slice(5).toUpperCase() : LS.get(KT, null);
     if (id.startsWith('team-')) { LS.set(KT, code); history.replaceState(null, '', '#team'); }
     if (!DB().online) { w.append(h('<div class="warnbox"><h3>Игра недоступна</h3><p>Общая база не подключена.</p></div>')); return null; }
-    let pub = {}, me = null, stopW = null, poll = null, tick = null, key = '', showRole = false, stopped = false;
+    let pub = {}, me = null, stopW = null, poll = null, tick = null, key = '', showRole = false, stopped = false, joinStop = null;
     if (!code) askCode(); else start();
 
     function askCode() {
       w.innerHTML = '';
-      const f = h('<div class="sheet tm-join"><div class="label">Налоговая мафия</div><h2>Вход команды</h2><p class="g-muted">Код из 4 символов вам выдал ведущий. Достаточно одного телефона на команду.</p><label class="f">Код команды<input class="g-codein" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="K7P2"></label><button type="button" class="btn" style="justify-self:start">Войти</button></div>');
-      const inp = f.querySelector('input'), b = f.querySelector('button');
-      const go = () => { const v = inp.value.trim().toUpperCase(); if (v.length < 4) return; code = v; LS.set(KT, v); start(); };
-      b.onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); };
-      w.append(f); inp.focus();
+      let mode = 'reg', pubNow = {};
+      const tabs = h('<div class="g-tabs" role="tablist"><button type="button" class="g-tab" data-m="reg">Зарегистрировать команду</button><button type="button" class="g-tab" data-m="code">Войти по коду</button></div>');
+      const holder = h('<div></div>'); w.append(h('<div><div class="label">Налоговая мафия</div><h2 style="font-size:1.6rem;margin-top:4px">Команда</h2></div>'), tabs, holder);
+      /* регистрация */
+      const picked = new Set();
+      const reg = h('<div class="sheet tm-join"><p class="g-muted">Один телефон на команду. Придумайте название и отметьте всех участников — себя в том числе. Роль команда получит сразу после регистрации.</p></div>');
+      const nmIn = h('<label class="f">Название команды<input maxlength="40" placeholder="Например: ТОО «Дебет»"></label>');
+      const search = h('<input class="search" type="search" placeholder="Поиск по фамилии">');
+      const grid = h('<div class="namegrid g-names"></div>');
+      const info = h('<div class="reveal">Отметьте участников.</div>');
+      const go = h('<button type="button" class="btn" style="justify-self:start">Зарегистрировать и получить роль</button>');
+      reg.append(nmIn, h('<div class="label">Участники из списка группы</div>'), search, grid, info, go);
+      const drawGrid = () => {
+        const taken = new Set((pubNow.teams || []).flatMap(t => t.members || []));
+        [...picked].forEach(p => taken.has(p) && picked.delete(p));
+        const q = search.value.trim().toLowerCase(); grid.innerHTML = '';
+        C.NAMES.filter(x => x.name.toLowerCase().includes(q)).forEach(x => {
+          const busy = taken.has(x.name), on = picked.has(x.name);
+          const b = h('<button type="button" class="nm' + (busy ? ' done' : '') + '" aria-pressed="' + on + '"><span class="no">' + x.no + '.</span><span>' + esc(x.name) + (busy ? ' · уже в команде' : '') + '</span></button>');
+          b.onclick = () => { if (busy) return; on ? picked.delete(x.name) : picked.add(x.name); drawGrid(); };
+          grid.append(b);
+        });
+        const closed = pubNow.phase && pubNow.phase !== 'setup';
+        info.innerHTML = closed ? '<b style="color:var(--bad)">Игра уже началась — регистрация закрыта.</b> Войдите по коду своей команды.' : picked.size ? 'Выбрано: <b>' + picked.size + '</b> — ' + [...picked].map(esc).join(', ') : 'Отметьте участников.';
+        go.disabled = !!closed;
+      };
+      search.oninput = drawGrid;
+      go.onclick = async () => {
+        const name = nmIn.querySelector('input').value.trim();
+        if (name.length < 2) return fail(new Error('Введите название команды.'));
+        if (!picked.size) return fail(new Error('Отметьте участников команды.'));
+        go.disabled = true;
+        try {
+          const r = await DB().teamRegister(name, [...picked]);
+          code = r.code; LS.set(KT, code); stopJoin(); showRole = true;
+          dialog('<h3>Команда «' + esc(name) + '» зарегистрирована</h3><p>Код вашей команды: <b class="g-code">' + esc(code) + '</b></p><p class="g-muted">Запомните его: по коду можно войти с другого телефона. Роль показана на экране — не показывайте её другим командам.</p>', [{ t: 'Понятно' }]);
+          start();
+        } catch (e) { fail(e); go.disabled = false; }
+      };
+      /* вход по коду */
+      const enter = h('<div class="sheet tm-join"><p class="g-muted">Код из 4 символов показан на телефоне, с которого команда регистрировалась.</p><label class="f">Код команды<input class="g-codein" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="K7P2"></label><button type="button" class="btn" style="justify-self:start">Войти</button></div>');
+      const inp = enter.querySelector('input');
+      const goCode = () => { const v = inp.value.trim().toUpperCase(); if (v.length < 4) return; code = v; LS.set(KT, v); stopJoin(); start(); };
+      enter.querySelector('button').onclick = goCode; inp.onkeydown = e => { if (e.key === 'Enter') goCode(); };
+      const show = m => { mode = m; tabs.querySelectorAll('.g-tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.m === m))); holder.innerHTML = ''; holder.append(m === 'reg' ? reg : enter); };
+      tabs.querySelectorAll('.g-tab').forEach(b => { b.onclick = () => show(b.dataset.m); });
+      const upd = g => { pubNow = g || {}; drawGrid(); if (pubNow.phase && pubNow.phase !== 'setup' && mode === 'reg') show('code'); };
+      DB().gameGet().then(upd).catch(() => { });
+      const offW = DB().watchGame(upd), pl = setInterval(() => DB().gameGet().then(upd).catch(() => { }), 5000);
+      function stopJoin() { offW(); clearInterval(pl); }
+      joinStop = stopJoin;
+      show('reg'); drawGrid();
     }
     async function load() {
       try { const [g, v] = await Promise.all([DB().gameGet(), DB().teamView(code)]); pub = g || {}; me = v; draw(); }
@@ -127,6 +174,7 @@ window.K8G = (function () {
       const R = ROLE[me.role] || { n: 'роль ещё не выдана', cls: '' };
       const top = h('<div class="tm-top"><div><div class="label">' + (r ? 'Квартал ' + r + ' из ' + (pub.maxRounds || QN) + ' · ' : '') + (PH[phase] || '') + '</div><h2>' + esc(my.name) + '</h2><p class="g-muted" style="font-size:.88rem">' + (my.members || []).map(esc).join(', ') + '</p></div>' + (pub.deadline && phase === 'case' ? '<span class="g-timer" data-deadline="' + pub.deadline + '">--:--</span>' : '') + '</div>');
       w.append(top);
+      w.append(h('<div class="g-coderow"><span>Код команды: <b class="g-code">' + esc(code) + '</b></span><span class="g-muted" style="font-size:.85rem">по нему можно войти с другого телефона</span></div>'));
       const rb = h('<button type="button" class="btn ghost tm-rolebtn">' + (showRole ? 'Скрыть роль' : 'Показать нашу роль (тайно)') + '</button>');
       rb.onclick = () => { showRole = !showRole; key = ''; draw(); };
       w.append(rb);
@@ -206,13 +254,13 @@ window.K8G = (function () {
       };
       f.append(opts, ta, b); w.append(f);
     }
-    return () => { stopped = true; stop(); };
+    return () => { stopped = true; stop(); joinStop && joinStop(); };
   }
 
   /* =================== ПАНЕЛЬ ВЕДУЩИХ: ХОД ИГРЫ =================== */
   /* box — контейнер вкладки; pin; show(d) — вывод на экран; isActive() — вкладка открыта */
   function admin(box, pin, show, isActive) {
-    let pub = null, sec = null, moves = [], sig = '', poll = null, showRoles = true, pick = new Set(), qSel = {};
+    let pub = null, sec = null, moves = [], sig = '', poll = null, showRoles = true, qSel = {}, deleted = new Set(), poolTouched = false;
     const nm = id => { const t = (pub.teams || []).find(x => x.id === id); return t ? t.name : '—'; };
     async function load(force) {
       if (!isActive()) { clearInterval(poll); return; }
@@ -226,7 +274,16 @@ window.K8G = (function () {
         draw();
       } catch (e) { box.innerHTML = ''; box.append(h('<div class="warnbox"><h3>Нет связи с игрой</h3><p>' + esc(e.message) + '</p></div>')); }
     }
-    async function save() { try { await DB().adminGameSet(pin, pub, sec); sig = ''; await load(true); } catch (e) { fail(e); } }
+    /* перед записью подтягиваем команды, которые зарегистрировались, пока ведущий работал */
+    async function save() {
+      try {
+        const d = await DB().adminGame(pin), g = d.game || {}, s = d.secret && d.secret.codes ? d.secret : {};
+        (g.teams || []).forEach(t => { if (!pub.teams.some(x => x.id === t.id) && !deleted.has(t.id)) { pub.teams.push(t); sec.roles[t.id] = (s.roles || {})[t.id]; sec.codes[t.id] = (s.codes || {})[t.id]; } });
+        if (!poolTouched && Array.isArray(s.pool)) sec.pool = s.pool;
+        poolTouched = false; deleted = new Set();
+        await DB().adminGameSet(pin, pub, sec); sig = ''; await load(true);
+      } catch (e) { fail(e); }
+    }
     if (!DB().online) { box.append(h('<div class="warnbox"><h3>Нужна общая база</h3><p>Игра с телефонами команд работает только с Supabase.</p></div>')); return; }
     box.append(h('<p class="g-muted">Загрузка игры…</p>'));
     load(true); poll = setInterval(load, 3000);
@@ -251,54 +308,29 @@ window.K8G = (function () {
       drawDanger();
     }
 
-    /* --- формирование команд --- */
+    /* --- регистрация команд (команды регистрируются сами с телефонов) --- */
     function drawSetup(T, role) {
-      const card = h('<div class="sheet adm-card"><h3>1. Сколько будет команд</h3><p class="g-muted" style="font-size:.9rem">По этому числу заранее перемешиваются роли: 1 Схемщики, 1 Консультант, 1 Мимик (при 4+), остальные — Аудиторы. Каждая новая команда сразу получает роль из этого набора.</p></div>');
-      const s = h('<select style="max-width:200px">' + [3, 4, 5, 6, 7, 8, 9, 10].map(n => '<option' + (n === sec.planned ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>');
-      s.onchange = () => { sec.planned = +s.value; if (!T.length) sec.pool = shuffle(rolesFor(sec.planned)); save(); };
+      const card = h('<div class="sheet adm-card"><h3>1. Сколько будет команд</h3><p class="g-muted" style="font-size:.9rem">По этому числу заранее перемешиваются роли: 1 Схемщики, 1 Консультант, 1 Мимик (при 4+), остальные — Аудиторы. Каждая зарегистрированная команда сразу получает роль из этого набора. Число можно менять, пока нет ни одной команды.</p></div>');
+      const s = h('<select style="max-width:200px"' + (T.length ? ' disabled' : '') + '>' + [3, 4, 5, 6, 7, 8, 9, 10].map(n => '<option' + (n === sec.planned ? ' selected' : '') + '>' + n + '</option>').join('') + '</select>');
+      s.onchange = () => { sec.planned = +s.value; sec.pool = shuffle(rolesFor(sec.planned)); poolTouched = true; save(); };
       card.append(s);
-      if (!T.length && sec.pool.length !== sec.planned) sec.pool = shuffle(rolesFor(sec.planned));
       box.append(card);
-      /* создание команды */
-      const taken = new Set(T.flatMap(t => t.members || []));
-      const f = h('<div class="sheet adm-card"><h3>2. Новая команда — ' + (T.length + 1) + ' из ' + sec.planned + '</h3></div>');
-      const nmIn = h('<label class="f">Название команды<input maxlength="40" placeholder="ТОО «Дебет»"></label>');
-      const search = h('<input class="search" type="search" placeholder="Поиск по фамилии">');
-      const grid = h('<div class="namegrid"></div>');
-      const chosen = h('<p class="g-muted"></p>');
-      const drawGrid = () => {
-        const q = search.value.trim().toLowerCase(); grid.innerHTML = '';
-        C.NAMES.filter(x => x.name.toLowerCase().includes(q)).forEach(x => {
-          const busy = taken.has(x.name), on = pick.has(x.name);
-          const b = h('<button type="button" class="nm' + (busy ? ' done' : '') + '" aria-pressed="' + on + '"><span class="no">' + x.no + '.</span><span>' + esc(x.name) + (busy ? ' · в команде' : '') + '</span></button>');
-          b.onclick = () => { if (busy) return; on ? pick.delete(x.name) : pick.add(x.name); drawGrid(); };
-          grid.append(b);
-        });
-        chosen.innerHTML = pick.size ? 'Выбрано: <b>' + pick.size + '</b> — ' + [...pick].map(esc).join(', ') : 'Отметьте учеников из списка Exit-ticket.';
-      };
-      search.oninput = drawGrid; drawGrid();
-      const go = h('<button type="button" class="btn" style="justify-self:start">Создать команду и выдать роль</button>');
-      go.onclick = () => {
-        const name = nmIn.querySelector('input').value.trim();
-        if (name.length < 2) return fail(new Error('Введите название команды.'));
-        if (T.some(t => t.name.toLowerCase() === name.toLowerCase())) return fail(new Error('Такое название уже есть.'));
-        if (!pick.size) return fail(new Error('Отметьте участников команды.'));
-        const id = Math.random().toString(36).slice(2, 8), code = newCode(Object.values(sec.codes));
-        if (!sec.pool.length) sec.pool = ['auditor'];
-        const ro = sec.pool.shift();
-        T.push({ id, name, members: [...pick] }); sec.roles[id] = ro; sec.codes[id] = code; pick = new Set();
-        save().then(() => dialog('<h3>Команда «' + esc(name) + '» создана</h3><p>Роль: <b>' + ROLE[ro].n + '</b> (команда увидит её на телефоне).</p><p>Код для телефона: <b class="g-code">' + code + '</b></p><p class="g-muted" style="word-break:break-all">' + esc(teamLink(code)) + '</p>', [{ t: 'Понятно' }]));
-      };
-      f.append(nmIn, search, grid, chosen, go);
-      box.append(f);
+      const link = location.origin + location.pathname + '#team';
+      const reg = h('<div class="sheet adm-card"><h3>2. Регистрация команд — ' + T.length + ' из ' + sec.planned + '</h3><p>Капитан открывает ссылку на телефоне, вводит название команды и отмечает участников из списка группы. Роль и код команда получает сразу.</p><p class="g-code" style="font-size:1rem;letter-spacing:0;word-break:break-all;justify-self:start">' + esc(link) + '</p></div>');
+      const row = h('<div class="adm-row"></div>');
+      const sb = h('<button type="button" class="btn">Ссылку и QR на доску</button>'); sb.onclick = () => show({ kind: 'join', url: link });
+      const left = C.NAMES.filter(x => !T.some(t => (t.members || []).includes(x.name)));
+      row.append(sb); reg.append(row);
+      reg.append(h('<p class="g-muted" style="font-size:.88rem">Ещё не в команде (' + left.length + '): ' + left.map(x => esc(x.name)).join(', ') + '</p>'));
+      box.append(reg);
       drawTeams(T, role, true);
       if (T.length >= 3) {
-        const c = h('<div class="sheet adm-card"><h3>3. Старт</h3><p>Раздайте командам коды. Когда все вошли с телефонов — начинайте первый квартал.</p></div>');
+        const c = h('<div class="sheet adm-card"><h3>3. Старт</h3><p>Когда все команды зарегистрировались — начинайте первый квартал. После старта регистрация закроется.</p></div>');
         const rr = h('<button type="button" class="btn ghost" style="justify-self:start">Перераздать роли случайно</button>');
-        rr.onclick = () => dialog('<h3>Перераздать роли?</h3><p>Роли всех команд поменяются по правилу распределения.</p>', [{ t: 'Отмена', cls: 'ghost' }, { t: 'Перераздать', on: () => { const p = shuffle(rolesFor(T.length)); T.forEach((t, i) => { sec.roles[t.id] = p[i]; }); sec.pool = []; save(); } }]);
+        rr.onclick = () => dialog('<h3>Перераздать роли?</h3><p>Роли всех команд поменяются по правилу распределения. Команды увидят новую роль на телефоне.</p>', [{ t: 'Отмена', cls: 'ghost' }, { t: 'Перераздать', on: () => { const p = shuffle(rolesFor(T.length)); T.forEach((t, i) => { sec.roles[t.id] = p[i]; }); sec.pool = []; poolTouched = true; save(); } }]);
         c.append(rr, quarterStart(1));
         box.append(c);
-      }
+      } else box.append(h('<div class="reveal">Для старта нужно минимум 3 команды.</div>'));
     }
     /* выбор кейса и старт квартала */
     function quarterStart(n) {
@@ -455,7 +487,7 @@ window.K8G = (function () {
         const tr = h('<tr><td><b>' + esc(tm.name) + '</b></td><td style="font-size:.86rem">' + (tm.members || []).map(esc).join(', ') + '</td><td>' + role(tm.id) + '</td><td><b class="g-code">' + code + '</b><div class="g-muted" style="font-size:.74rem;word-break:break-all">' + esc(teamLink(code)) + '</div></td><td></td></tr>');
         if (pub.phase === 'setup') {
           const del = h('<button type="button" class="btn ghost" style="padding:5px 10px;font-size:.85rem">Удалить</button>');
-          del.onclick = () => dialog('<h3>Удалить «' + esc(tm.name) + '»?</h3><p>Её роль вернётся в набор.</p>', [{ t: 'Отмена', cls: 'ghost' }, { t: 'Удалить', on: () => { sec.pool.unshift(sec.roles[tm.id]); delete sec.roles[tm.id]; delete sec.codes[tm.id]; pub.teams = T.filter(x => x !== tm); save(); } }]);
+          del.onclick = () => dialog('<h3>Удалить «' + esc(tm.name) + '»?</h3><p>Её роль вернётся в набор, участники смогут зарегистрироваться заново.</p>', [{ t: 'Отмена', cls: 'ghost' }, { t: 'Удалить', on: () => { sec.pool.unshift(sec.roles[tm.id]); poolTouched = true; deleted.add(tm.id); delete sec.roles[tm.id]; delete sec.codes[tm.id]; pub.teams = T.filter(x => x !== tm); save(); } }]);
           tr.lastChild.append(del);
         }
         t.querySelector('tbody').append(tr);

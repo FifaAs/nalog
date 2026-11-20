@@ -343,11 +343,23 @@ window.K8G = (function () {
       const tm = h('<select style="flex:0 1 140px"><option value="120">2 мин</option><option value="180">3 мин</option><option value="90">1,5 мин</option><option value="0">без таймера</option></select>');
       const b = h('<button type="button" class="btn blue">Начать квартал ' + n + ': кейс на доску</button>');
       b.onclick = async () => {
+        if (n === 1) {
+          const have = new Set(pub.teams.map(t => sec.roles[t.id])), need = rolesFor(pub.teams.length).filter((x, i, a) => a.indexOf(x) === i && x !== 'auditor');
+          const miss = need.filter(x => !have.has(x));
+          if (miss.length) {
+            dialog('<h3>Набор ролей неполный</h3><p>Зарегистрировалось ' + pub.teams.length + ' команд, а роли раздавались на ' + sec.planned + '. Нет ролей: <b>' + miss.map(x => ROLE[x].n).join(', ') + '</b>.</p><p>Перераздать роли по фактическому числу команд? Команды увидят новую роль на телефоне.</p>',
+              [{ t: 'Начать как есть', cls: 'ghost', on: () => begin() }, { t: 'Перераздать и начать', on: async () => { const p = shuffle(rolesFor(pub.teams.length)); pub.teams.forEach((t, i) => { sec.roles[t.id] = p[i]; }); sec.pool = []; poolTouched = true; await begin(); } }]);
+            return;
+          }
+        }
+        await begin();
+      };
+      async function begin() {
         const ci = qSel[n], secs = +tm.value;
         pub.round = n; pub.phase = 'case'; pub.caseIdx = ci; pub.deadline = secs ? Date.now() + secs * 1000 : 0; pub.day = null;
         sec.rounds[n - 1] = { caseIdx: ci, ov: {}, aud: {}, extraOv: null, extraIdx: (n - 1) % BANK().extra.length, victim: null };
         await save(); show({ kind: 'main', idx: ci, reveal: false, ends: pub.deadline, label: 'Квартал ' + n + ' · кейс для всех команд' });
-      };
+      }
       wrap.append(s, tm, b); return wrap;
     }
 

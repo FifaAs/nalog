@@ -296,6 +296,51 @@ table.sm td,table.sm th{padding:10px 12px;font-size:.92rem}
 td.cur{background:var(--blue-soft)}
 .ev{border-left:4px solid var(--blue);background:var(--blue-soft);border-radius:0 10px 10px 0;padding:10px 14px}
 .ev.hit{border-color:var(--bad);background:var(--bad-soft)}.ev.good{border-color:var(--green);background:var(--green-soft)}
+/* game: home row, team phone, host panel */
+.exit-row{display:grid;padding-bottom:50px}
+.exit-row .tile{min-height:auto}
+.sub-tiles{padding-bottom:16px}
+.tm{padding-block:18px 50px;display:grid;gap:14px;max-width:760px}
+.tm-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.tm-top h2{font-size:1.4rem;margin-top:4px}
+.tm-join{display:grid;gap:12px;margin:0}
+.tm-join h2{font-size:1.6rem}
+.tm-rolebtn{justify-self:start}
+.rolecard2{border-radius:16px;padding:16px 18px;display:grid;gap:6px;color:#fff;background:#4f6866}
+.rolecard2 .label,.rolecard2 .g-muted{color:rgba(255,255,255,.8)}
+.rolecard2 h3{font-size:1.4rem}
+.rolecard2.r-mafia{background:#2a2f37}.rolecard2.r-cons{background:var(--green-2)}.rolecard2.r-mimic{background:#6b3a9c}.rolecard2.r-aud{background:#8a5300}
+.tm-form{display:grid;gap:12px;margin:0}
+.tm-q{font-size:1.15rem;line-height:1.35}
+.tm-form textarea{font:inherit;font-family:var(--body);font-size:1rem;color:var(--ink);background:#f7fbfa;border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;resize:vertical}
+.tm-form textarea:focus{border-color:var(--blue);outline:none;box-shadow:0 0 0 3px var(--blue-soft)}
+.pr-opt[aria-pressed="true"]{border-color:var(--blue);background:var(--blue-soft);box-shadow:inset 0 0 0 1px var(--blue)}
+.tm-sent{font-size:.9rem}
+.tm-notes{margin:0;display:grid;gap:8px}
+.tm-notes summary{cursor:pointer}
+.tm-note{border-top:1px solid var(--line);padding-top:8px}
+.tm-note ul{margin:4px 0 0;padding-left:18px;font-size:.92rem}
+.gm-status{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.gm-status>div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;display:grid;gap:2px}
+.gm-status b{font-family:var(--display);font-size:1.2rem}
+.gm-secret{display:flex;gap:8px;align-items:center;font-size:.9rem;color:var(--muted)}
+.gm-secret input{width:auto}
+.gm-t td{vertical-align:top}
+.gm-arg{font-size:.9rem;max-width:360px;white-space:pre-wrap;overflow-wrap:anywhere}
+.gm-ans{font-family:var(--display);font-size:1.2rem}
+.gm-ans.y{color:var(--green-2)}.gm-ans.n{color:var(--bad)}
+.gm-extra{border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:8px;background:#f7fbfa}
+.gm-hist{border-top:1px solid var(--line);padding-top:8px}
+.gm-hist summary{cursor:pointer;padding:4px 0}
+.rchip.blur{filter:blur(5px)}
+.scr-scores{display:grid;gap:10px;max-width:900px}
+.scr-srow{display:grid;grid-template-columns:56px minmax(0,1fr) auto 90px;gap:14px;align-items:center;background:#153634;border:2px solid #2d5a57;border-radius:14px;padding:12px 18px;font-size:clamp(1.1rem,2.2vw,1.6rem)}
+.scr-srow.first{border-color:#3fbf86;background:#1b4d3a}
+.scr-srow .n{font-family:var(--display);font-weight:800;color:#7fd3ff}
+.scr-srow .rl{font-family:var(--mono);font-size:.7em;color:#9cc2bb}
+.scr-srow b{font-family:var(--display);text-align:right}
+@media (max-width:700px){.gm-status{grid-template-columns:repeat(2,minmax(0,1fr))}.scr-srow{grid-template-columns:40px minmax(0,1fr) 70px}.scr-srow .rl{display:none}}
+
 /* projector screen */
 body.screen-mode .topbar{display:none}
 body.screen-mode{background:#0f2b2a}
@@ -455,6 +500,7 @@ body.g-screen-mode .wrap{max-width:1500px}
 <script src="db.js"></script>
 <script src="cases.js"></script>
 <script src="extra.js"></script>
+<script src="game2.js"></script>
 <script>
 (function(){
 "use strict";
@@ -808,6 +854,7 @@ function route(){const id=(location.hash||'#home').slice(1);if(cleanup){cleanup(
  const t=topics.find(x=>x.id===id);
  if(id==='journal'){location.hash='admin';return}
  if(t)renderDeck(t);else if(id==='work')renderWork();
+ else if((id==='team'||id.indexOf('team-')===0)&&window.K8G)cleanup=window.K8G.renderTeam(id,{h,$,view,dialog,store,NAMES})||null;
  else if((id==='practice'||id==='admin'||id==='screen')&&window.K8X)cleanup=window.K8X.render(id,{h,$,view,dialog,store,NAMES,nf,parseCode,MAXPTS,results,clearLocalResults:()=>{store.set(K_RES,[]);try{localStorage.removeItem(K_RUN)}catch(e){}}})||null;
  else renderHome();
  window.scrollTo(0,0)}
@@ -816,13 +863,15 @@ window.addEventListener('hashchange',route);
 
 /* ============ HOME ============ */
 function renderHome(){view.innerHTML='';const w=h('<div class="wrap"></div>');
- w.append(h('<section class="hero"><div class="label">Налоги и налогообложение · Команда 8 · НК РК 2026</div><h1 style="margin-top:12px">Налоговая отчётность, <em>декларирование</em> и комплексный расчёт</h1><p>Пять тем — пять докладчиков. Листайте слайды стрелками. После тем — работа на закрепление, в самом конце — Exit-ticket.</p></section>'));
+ w.append(h('<section class="hero"><div class="label">Налоги и налогообложение · Команда 8 · НК РК 2026</div><h1 style="margin-top:12px">Налоговая отчётность, <em>декларирование</em> и комплексный расчёт</h1><p>Пять тем — пять докладчиков. Листайте слайды стрелками. После тем — работа на закрепление и командная игра, в самом конце — Exit-ticket.</p></section>'));
  const g=h('<div class="tiles"></div>');
  topics.forEach(t=>{const b=h('<button type="button" class="tile"><span class="n">'+t.n+'</span><h2>'+t.title+'</h2><p>'+t.short+'</p><span class="arts">'+t.arts+' · '+t.slides.length+' '+(n=>n%10===1&&n%100!==11?'слайд':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'слайда':'слайдов')(t.slides.length)+'</span></button>');b.onclick=()=>{location.hash=t.id};g.appendChild(b)});
  const pr=h('<button type="button" class="tile practice"><span class="n">06</span><h2>Работа на закрепление</h2><p>10 вопросов по всем пяти темам. После каждого ответа — объяснение, почему он верный или неверный.</p><span class="arts">10 баллов · около 10 минут</span></button>');pr.onclick=()=>{location.hash='practice'};g.appendChild(pr);
  w.append(g);
- const j=h('<div class="sub-tiles"><button type="button" class="tile work"><span class="n">✎</span><h2>Exit-ticket</h2><p>Финальная проверка в конце занятия: 8 заданий по всем темам, 4 варианта. Выберите своё имя. Уход со страницы фиксируется.</p><span class="arts">20 баллов · около 15 минут</span></button><button type="button" class="tile small" style="min-height:auto"><h2 style="font-size:1rem">Панель ведущих</h2><p>Ход игры, вывод кейса на экран, результаты закрепления и Exit-ticket. Нужен PIN.</p></button></div>');
- j.children[0].onclick=()=>{location.hash='work'};j.children[1].onclick=()=>{location.hash='admin'};w.append(j);
+ const j=h('<div class="sub-tiles"><button type="button" class="tile small game"><span class="n" style="font-size:1.6rem">Игра</span><h2>Налоговая мафия · вход команды</h2><p>Кейс квартала — на доске, ответ с аргументацией и тайный ход — с телефона команды. Нужен код от ведущего.</p><span class="arts">командная игра · 5 кварталов</span></button><button type="button" class="tile small" style="min-height:auto"><h2 style="font-size:1rem">Панель ведущих</h2><p>Ход игры, экран для доски, результаты закрепления и Exit-ticket. Нужен PIN.</p></button></div>');
+ j.children[0].onclick=()=>{location.hash='team'};j.children[1].onclick=()=>{location.hash='admin'};w.append(j);
+ const ex=h('<div class="exit-row"><button type="button" class="tile work"><span class="n">✎</span><h2>Exit-ticket</h2><p>Финальная проверка в конце занятия: 8 заданий по всем темам, 4 варианта. Выберите своё имя. Уход со страницы фиксируется.</p><span class="arts">20 баллов · около 15 минут</span></button></div>');
+ ex.firstElementChild.onclick=()=>{location.hash='work'};w.append(ex);
  view.append(w)}
 
 /* ============ DECK ============ */
